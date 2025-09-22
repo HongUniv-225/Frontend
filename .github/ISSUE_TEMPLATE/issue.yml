@@ -1,0 +1,27 @@
+name: "이슈 생성 템플릿"
+description: "해당 이슈 생성 템플릿을 사용하여 이슈를 생성해주세요"
+title: "[Issue] "
+labels: ""
+body:
+  - type: textarea
+    attributes:
+      label: 📄 Description
+      description: 이슈에 대한 설명을 작성해 주세요.
+      placeholder: 구체적인 상황과 배경을 포함해서 작성해주세요.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: ✅ Tasks
+      description: 이슈 해결을 위한 세부 작업 목록을 체크리스트로 작성해주세요.
+      placeholder: |-
+        - [ ] 첫 번째 작업
+        - [ ] 두 번째 작업
+        - [ ] 세 번째 작업
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 📎 ETC
+      description: 참고사항이나 추가로 공유할 내용이 있다면 작성해주세요.
+      placeholder: 관련 링크, 스크린샷, 참고 자료 등
