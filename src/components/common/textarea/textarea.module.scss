@@ -1,0 +1,45 @@
+.textarea {
+  display: flex;
+  width: 100%;
+  min-height: 5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: all 0.2s;
+  resize: vertical;
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #646cff;
+    box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .textarea {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+
+    &::placeholder {
+      color: #6b7280;
+    }
+
+    &:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+    }
+  }
+}

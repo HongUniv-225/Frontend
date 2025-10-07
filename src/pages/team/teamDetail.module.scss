@@ -1,0 +1,530 @@
+.teamDetail {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.notFound {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9fafb;
+
+  .notFoundContent {
+    text-align: center;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 1rem 0;
+    }
+  }
+}
+
+.header {
+  border-bottom: 1px solid #e5e7eb;
+  background-color: white;
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .headerContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .groupTitle {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .groupColor {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 9999px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+      }
+    }
+  }
+
+  .headerRight {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.content {
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @media (min-width: 1024px) {
+      grid-template-columns: 1fr 2fr;
+    }
+  }
+}
+
+.leftSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.groupInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .infoItem {
+    .infoLabel {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .infoValue {
+      font-size: 0.875rem;
+      color: #111827;
+      margin: 0;
+    }
+  }
+}
+
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+
+  .memberInfo {
+    flex: 1;
+    min-width: 0;
+
+    .memberName {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #111827;
+      margin: 0;
+    }
+
+    .memberRole {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin: 0.125rem 0 0 0;
+    }
+  }
+}
+
+.rightSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+}
+
+.taskSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  h3 {
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  svg {
+    stroke-width: 2;
+  }
+}
+
+.taskSectionHeaderCollapsible {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  h3 {
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+
+  svg {
+    stroke-width: 2;
+    transition: transform 0.2s;
+
+    &.chevronUp {
+      transform: rotate(180deg);
+    }
+
+    &:last-child {
+      margin-left: auto;
+    }
+  }
+}
+
+.iconPending {
+  color: #eab308;
+}
+
+.iconProgress {
+  color: #3b82f6;
+}
+
+.iconCompleted {
+  color: #10b981;
+}
+
+.iconFailed {
+  color: #ef4444;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskCard {
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.taskHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+
+  h3 {
+    font-weight: 500;
+    color: #111827;
+    margin: 0;
+    font-size: 0.875rem;
+  }
+}
+
+.taskDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 0.75rem 0;
+}
+
+.taskFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .taskInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+
+    .taskDate {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      svg {
+        stroke-width: 2;
+      }
+    }
+  }
+}
+
+.priorityHigh {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.priorityMedium {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.priorityLow {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.expandButton {
+  width: 100%;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+  text-align: center;
+
+  svg {
+    color: #d1d5db;
+    opacity: 0.3;
+    margin-bottom: 0.75rem;
+    stroke-width: 1.5;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0;
+
+    &:first-of-type {
+      font-weight: 500;
+      color: #111827;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .emptyDesc {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+  }
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+
+  .statItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    svg {
+      stroke-width: 2;
+    }
+  }
+}
+
+.statsTotal {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #646cff;
+    box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+  }
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  .dialogActions {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+
+    button {
+      flex: 1;
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .teamDetail {
+    background-color: #111827;
+  }
+
+  .notFound {
+    background-color: #111827;
+
+    .notFoundContent h1 {
+      color: #f9fafb;
+    }
+  }
+
+  .header {
+    background-color: #1f2937;
+    border-bottom-color: #374151;
+
+    .headerLeft .groupTitle h1 {
+      color: #f9fafb;
+    }
+  }
+
+  .groupInfo .infoItem {
+    .infoLabel {
+      color: #9ca3af;
+    }
+
+    .infoValue {
+      color: #f9fafb;
+    }
+  }
+
+  .memberItem {
+    &:hover {
+      background-color: #1f2937;
+    }
+
+    .memberInfo {
+      .memberName {
+        color: #f9fafb;
+      }
+
+      .memberRole {
+        color: #9ca3af;
+      }
+    }
+  }
+
+  .sectionHeader h2 {
+    color: #f9fafb;
+  }
+
+  .taskSectionHeader h3,
+  .taskSectionHeaderCollapsible h3 {
+    color: #f9fafb;
+  }
+
+  .taskHeader h3 {
+    color: #f9fafb;
+  }
+
+  .taskDescription {
+    color: #9ca3af;
+  }
+
+  .taskFooter .taskInfo {
+    color: #9ca3af;
+  }
+
+  .priorityHigh {
+    background-color: #7f1d1d;
+    color: #fecaca;
+  }
+
+  .priorityMedium {
+    background-color: #78350f;
+    color: #fef08a;
+  }
+
+  .priorityLow {
+    background-color: #064e3b;
+    color: #a7f3d0;
+  }
+
+  .emptyState p {
+    color: #9ca3af;
+
+    &:first-of-type {
+      color: #f9fafb;
+    }
+  }
+
+  .statsTotal {
+    border-top-color: #374151;
+    color: #9ca3af;
+  }
+
+  .select {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+
+  .dialogForm label {
+    color: #e5e7eb;
+  }
+}

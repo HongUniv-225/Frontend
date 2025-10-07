@@ -1,0 +1,49 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.default {
+  background-color: #646cff;
+  color: white;
+}
+
+.secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.outline {
+  background-color: transparent;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.destructive {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  .secondary {
+    background-color: #374151;
+    color: #e5e7eb;
+  }
+
+  .outline {
+    border-color: #4b5563;
+    color: #e5e7eb;
+  }
+
+  .destructive {
+    background-color: #7f1d1d;
+    color: #fecaca;
+  }
+}
