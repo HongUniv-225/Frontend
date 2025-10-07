@@ -1,0 +1,634 @@
+.user {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.header {
+  border-bottom: 1px solid #e5e7eb;
+  background-color: white;
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .headerContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 0;
+    }
+  }
+}
+
+.content {
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+    @media (min-width: 1024px) {
+      grid-template-columns: 1fr 2fr;
+    }
+  }
+}
+
+.leftSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profileCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+
+  .avatarWrapper {
+    position: relative;
+
+    .avatar {
+      width: 6rem;
+      height: 6rem;
+      font-size: 1.5rem;
+    }
+
+    .editButton {
+      position: absolute;
+      bottom: -0.5rem;
+      right: -0.5rem;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 9999px;
+      border: 2px solid white;
+      background-color: #646cff;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #535bf2;
+      }
+
+      svg {
+        stroke-width: 2;
+      }
+    }
+  }
+
+  .profileInfo {
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 0.25rem 0;
+    }
+
+    .email {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+
+  .bio {
+    font-size: 0.875rem;
+    color: #111827;
+    margin: 0;
+  }
+
+  .joinDate {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+}
+
+.quickStats {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+
+    .statBox {
+      text-align: center;
+      padding: 0.75rem;
+      background-color: #f9fafb;
+      border-radius: 0.5rem;
+
+      .statValue {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .statLabel {
+        font-size: 0.75rem;
+        color: #6b7280;
+      }
+    }
+  }
+
+  .progressSection {
+    .progressHeader {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .progressBar {
+      height: 0.5rem;
+      background-color: #e5e7eb;
+      border-radius: 9999px;
+      overflow: hidden;
+
+      .progressFill {
+        height: 100%;
+        background-color: #646cff;
+        transition: width 0.3s;
+      }
+    }
+  }
+
+  .streakBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: #fff7ed;
+    border-radius: 0.5rem;
+
+    .streakIcon {
+      font-size: 1.5rem;
+    }
+
+    .streakLabel {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .streakValue {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #ea580c;
+    }
+  }
+}
+
+.rightSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: 2.5rem;
+  align-items: center;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+}
+
+.tab,
+.tabActive {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab {
+  color: #6b7280;
+
+  &:hover {
+    color: #111827;
+  }
+}
+
+.tabActive {
+  background-color: white;
+  color: #111827;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.overviewGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .overviewItem {
+    text-align: center;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+
+    svg {
+      margin: 0 auto 0.5rem;
+      stroke-width: 2;
+    }
+
+    .overviewValue {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .overviewLabel {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+  }
+}
+
+.iconCompleted {
+  color: #10b981;
+}
+
+.iconProgress {
+  color: #3b82f6;
+}
+
+.iconPending {
+  color: #6b7280;
+}
+
+.goalsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .goalItem {
+    .goalHeader {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .progressBar {
+      height: 0.5rem;
+      background-color: #e5e7eb;
+      border-radius: 9999px;
+      overflow: hidden;
+
+      .progressFill {
+        height: 100%;
+        background-color: #646cff;
+        transition: width 0.3s;
+      }
+    }
+  }
+}
+
+.groupsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.groupItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+
+  .groupItemLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .groupColor {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 9999px;
+    }
+
+    .groupItemInfo {
+      h3 {
+        font-weight: 500;
+        color: #111827;
+        margin: 0;
+        font-size: 0.875rem;
+      }
+
+      p {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin: 0.125rem 0 0 0;
+      }
+    }
+  }
+
+  .groupItemRight {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+
+  .activityContent {
+    flex: 1;
+    min-width: 0;
+
+    .activityTask {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #111827;
+      margin: 0;
+    }
+
+    .activityGroup {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin: 0.125rem 0 0 0;
+    }
+  }
+
+  .activityDate {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+}
+
+.actionCompleted {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.actionAdded {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.actionModified {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.achievementsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.achievementEarned,
+.achievementLocked {
+  padding: 1rem;
+  border: 2px solid;
+  border-radius: 0.5rem;
+
+  .achievementHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+
+    .achievementIcon {
+      font-size: 2rem;
+    }
+
+    .achievementInfo {
+      flex: 1;
+
+      h3 {
+        font-weight: 500;
+        margin: 0 0 0.25rem 0;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .achievementDesc {
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+.achievementEarned {
+  background-color: #fef3c7;
+  border-color: #fbbf24;
+
+  .achievementHeader .achievementInfo h3 {
+    color: #92400e;
+  }
+
+  .achievementDesc {
+    color: #b45309;
+  }
+}
+
+.achievementLocked {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+
+  .achievementHeader .achievementInfo h3 {
+    color: #6b7280;
+  }
+
+  .achievementDesc {
+    color: #9ca3af;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .user {
+    background-color: #111827;
+  }
+
+  .header {
+    background-color: #1f2937;
+    border-bottom-color: #374151;
+
+    .headerLeft h1 {
+      color: #f9fafb;
+    }
+  }
+
+  .profileCard {
+    .profileInfo h2 {
+      color: #f9fafb;
+    }
+
+    .bio {
+      color: #f9fafb;
+    }
+  }
+
+  .quickStats {
+    .statsRow .statBox {
+      background-color: #1f2937;
+
+      .statValue {
+        color: #f9fafb;
+      }
+    }
+
+    .streakBox {
+      background-color: #7c2d12;
+    }
+  }
+
+  .tabs {
+    background-color: #374151;
+  }
+
+  .tab {
+    color: #9ca3af;
+
+    &:hover {
+      color: #f9fafb;
+    }
+  }
+
+  .tabActive {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .overviewGrid .overviewItem {
+    border-color: #374151;
+
+    .overviewValue {
+      color: #f9fafb;
+    }
+
+    .overviewLabel {
+      color: #9ca3af;
+    }
+  }
+
+  .groupItem {
+    border-color: #374151;
+
+    .groupItemLeft .groupItemInfo {
+      h3 {
+        color: #f9fafb;
+      }
+
+      p {
+        color: #9ca3af;
+      }
+    }
+  }
+
+  .activityItem {
+    border-color: #374151;
+
+    .activityContent {
+      .activityTask {
+        color: #f9fafb;
+      }
+
+      .activityGroup {
+        color: #9ca3af;
+      }
+    }
+  }
+
+  .actionCompleted {
+    background-color: #064e3b;
+    color: #a7f3d0;
+  }
+
+  .actionAdded {
+    background-color: #1e3a8a;
+    color: #bfdbfe;
+  }
+
+  .actionModified {
+    background-color: #78350f;
+    color: #fef08a;
+  }
+
+  .achievementEarned {
+    background-color: #78350f;
+    border-color: #d97706;
+
+    .achievementHeader .achievementInfo h3 {
+      color: #fef08a;
+    }
+
+    .achievementDesc {
+      color: #fde68a;
+    }
+  }
+
+  .achievementLocked {
+    background-color: #374151;
+    border-color: #4b5563;
+
+    .achievementHeader .achievementInfo h3 {
+      color: #9ca3af;
+    }
+
+    .achievementDesc {
+      color: #6b7280;
+    }
+  }
+}
