@@ -1,0 +1,201 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+  padding: 1rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 28rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.carouselContainer {
+  position: relative;
+}
+
+.carousel {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #f9fafb;
+}
+
+.slides {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.slide {
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.imageContainer {
+  aspect-ratio: 16/9;
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, #3b82f6 10%, #1d4ed8 100%);
+}
+
+.placeholderImage {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #3b82f6 10%, #1d4ed8 100%);
+}
+
+.slideContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.slideTitle {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.slideDescription {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.carouselButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.25rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: white;
+  }
+}
+
+.icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #374151;
+}
+
+.indicators {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.indicator {
+  height: 0.5rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(107, 114, 128, 0.3);
+  width: 0.5rem;
+
+  &.active {
+    width: 2rem;
+    background: #3b82f6;
+  }
+}
+
+.loginSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.errorMessage {
+  padding: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.googleLoginButton {
+  width: 100%;
+  height: 3rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    background: #f3f4f6;
+    transform: translateY(1px);
+  }
+}
+
+.googleIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.terms {
+  font-size: 0.75rem;
+  text-align: center;
+  color: #6b7280;
+  line-height: 1.5;
+}
