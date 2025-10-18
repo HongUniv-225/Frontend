@@ -28,7 +28,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "../../components/common/dropdown/Dropdown";
-import { Task, Member, TodoStatus } from "../../types";
+import { type Task, type Member, type TodoStatus } from "../../types";
 import styles from "./teamDetail.module.scss";
 
 // Mock data

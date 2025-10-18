@@ -23,7 +23,7 @@ import {
   DropdownMenuItem,
 } from "../../components/common/dropdown/Dropdown";
 import Textarea from "../../components/common/textarea/Textarea";
-import { Todo, User } from "../../types";
+import { type Todo, type User } from "../../types";
 import { getStoredUser } from "../../apis/auth";
 import styles from "./main.module.scss";
 

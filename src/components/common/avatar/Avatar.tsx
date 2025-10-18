@@ -1,4 +1,8 @@
-import { ReactNode, ImgHTMLAttributes, HTMLAttributes } from "react";
+import {
+  type ReactNode,
+  type ImgHTMLAttributes,
+  type HTMLAttributes,
+} from "react";
 import styles from "./avatar.module.scss";
 import { cn } from "../../../utils/cn";
 

@@ -1,9 +1,9 @@
 import {
-  ReactNode,
+  type ReactNode,
   useState,
   createContext,
   useContext,
-  HTMLAttributes,
+  type HTMLAttributes,
 } from "react";
 import styles from "./dialog.module.scss";
 import { cn } from "../../../utils/cn";
@@ -65,7 +65,9 @@ export const DialogTrigger = ({
     "props" in children
   ) {
     const child = children as React.ReactElement;
-    return <child.type {...child.props} onClick={() => setOpen(true)} />;
+    return (
+      <child.type {...(child.props as any)} onClick={() => setOpen(true)} />
+    );
   }
 
   return (

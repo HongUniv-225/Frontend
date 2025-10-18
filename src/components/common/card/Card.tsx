@@ -1,4 +1,4 @@
-import { ReactNode, HTMLAttributes } from "react";
+import { type ReactNode, type HTMLAttributes } from "react";
 import styles from "./card.module.scss";
 import { cn } from "../../../utils/cn";
 

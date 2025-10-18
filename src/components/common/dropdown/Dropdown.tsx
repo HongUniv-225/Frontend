@@ -1,9 +1,9 @@
 import {
-  ReactNode,
+  type ReactNode,
   useState,
   createContext,
   useContext,
-  HTMLAttributes,
+  type HTMLAttributes,
   useRef,
   useEffect,
 } from "react";
@@ -60,7 +60,7 @@ export const DropdownMenuTrigger = ({
     "props" in children
   ) {
     const child = children as React.ReactElement;
-    return <child.type {...child.props} onClick={() => setOpen(!open)} />;
+    return <child.type {...(child.props as any)} onClick={() => setOpen(!open)} />;
   }
 
   return (

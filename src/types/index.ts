@@ -36,9 +36,14 @@ export interface Member {
   avatar?: string;
 }
 
-export interface GroupDetail extends Group {
+export interface GroupDetail {
+  id: number;
+  name: string;
+  description: string;
+  color: string;
   members: Member[];
   tasks: Task[];
+  createdAt?: string;
 }
 
 // User types
