@@ -40,3 +40,22 @@ export interface GroupDetail extends Group {
   members: Member[];
   tasks: Task[];
 }
+
+// User types
+export interface User {
+  nickname: string;
+  imageUrl: string;
+  email: string;
+  introduction: string;
+}
+
+// Auth types
+export interface LoginResponse {
+  success: boolean;
+  data?: {
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+  };
+  error?: string;
+}

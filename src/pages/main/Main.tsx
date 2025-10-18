@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "../../components/common/card/Card";
 import Button from "../../components/common/button/Button";
@@ -23,7 +23,8 @@ import {
   DropdownMenuItem,
 } from "../../components/common/dropdown/Dropdown";
 import Textarea from "../../components/common/textarea/Textarea";
-import { Todo } from "../../types";
+import { Todo, User } from "../../types";
+import { getStoredUser } from "../../apis/auth";
 import styles from "./main.module.scss";
 
 // Mock data
@@ -76,6 +77,12 @@ const Main = () => {
     category: "취미",
     isPublic: true,
   });
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const storedUser = getStoredUser();
+    setUser(storedUser);
+  }, []);
 
   const getDateKey = (date: Date) => {
     return date.toISOString().split("T")[0];
@@ -202,8 +209,10 @@ const Main = () => {
               <Link to="/user">
                 <Button variant="ghost" size="sm">
                   <Avatar>
-                    <AvatarImage src="" />
-                    <AvatarFallback>나</AvatarFallback>
+                    <AvatarImage src={user?.imageUrl} />
+                    <AvatarFallback>
+                      {user?.nickname ? user.nickname[0] : "나"}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </Link>
