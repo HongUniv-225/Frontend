@@ -48,6 +48,24 @@
       align-items: center;
       gap: 0.75rem;
 
+      .helpButton {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #f3f4f6;
+        }
+      }
+
+      .helpIcon {
+        width: 18px;
+        height: 18px;
+      }
+
       .groupColor {
         width: 1rem;
         height: 1rem;
@@ -232,7 +250,7 @@
 }
 
 .iconProgress {
-  color: #3b82f6;
+  color: #171717;
 }
 
 .iconCompleted {
@@ -392,7 +410,7 @@
 
   &:focus {
     outline: none;
-    border-color: #646cff;
+    border-color: #171717;
     box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
   }
 }
@@ -527,4 +545,48 @@
   .dialogForm label {
     color: #e5e7eb;
   }
+}
+
+// Help Modal Styles
+.helpModal {
+  max-width: 32rem;
+}
+
+.helpContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.helpSection {
+  .helpSectionTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.75rem 0;
+  }
+}
+
+.helpList {
+  margin: 0;
+  padding-left: 1.25rem;
+
+  li {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.helpFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
 }

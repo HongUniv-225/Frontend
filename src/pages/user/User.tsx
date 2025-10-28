@@ -1,540 +1,940 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../../components/common/card/Card";
-import Button from "../../components/common/button/Button";
-import Badge from "../../components/common/badge/Badge";
+} from "@/components/common/card/Card";
+import Button from "@/components/common/button/Button";
 import {
   Avatar,
-  AvatarImage,
   AvatarFallback,
-} from "../../components/common/avatar/Avatar";
+  AvatarImage,
+} from "@/components/common/avatar/Avatar";
+import { Progress } from "@/components/common/progress/Progress";
+import completeImage from "../../assets/complete.png";
+import uncompleteImage from "../../assets/uncomplete.png";
+import createImage from "../../assets/create.png";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/common/dialog/Dialog";
+import Textarea from "@/components/common/textarea/Textarea";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  Circle,
+  TrendingUp,
+  Users,
+  Flame,
+  BarChart3,
+  Edit,
+} from "lucide-react";
+import { getStoredUser, getStoredToken } from "@/apis/auth";
+import questionmarkIcon from "../../assets/questionmark.svg";
+import {
+  getUserProfile,
+  getUserStats,
+  getUserGroups,
+  getRecentActivities,
+  getWeeklyStats,
+  getActivityReport,
+  getAchievements,
+  updateUserProfile,
+} from "@/apis/user";
 import styles from "./user.module.scss";
 
-// Mock user data
-const mockUserData = {
-  id: 1,
-  name: "김철수",
-  email: "kim@example.com",
-  avatar: "",
-  joinDate: "2024-01-01",
-  bio: "효율적인 업무 관리를 추구하는 개발자입니다.",
+// Type definitions
+interface Group {
+  id: number;
+  groupName: string;
+  description: string;
+  numMember: number;
+}
+
+interface Activity {
+  action: string;
+  todoContent: string;
+  timeAgo: string;
+}
+
+interface WeeklyStats {
+  totalTodoCount: number;
+  completedTodoCount: number;
+  completedRate: number;
+  groupTodoRate: number;
+  dailyCompletedCount: number[];
+}
+
+interface ActivityReport {
+  completedCount: number;
+  inProgressCount: number;
+  inCompletedCount: number;
+  userMaxStreak: number;
+  userCurrentStreak: number;
+  completeRate: number;
+}
+
+interface Achievement {
+  id: number;
+  title: string;
+  description: string;
+  icon: string;
+  earned: boolean;
+}
+
+interface UserData {
+  id: number;
+  name: string;
+  nickname?: string;
+  email: string;
+  avatar: string;
+  imageUrl?: string; // 프로필 이미지 URL 추가
+  joinDate: string;
+  bio: string;
+  introduction?: string;
   stats: {
-    totalTasks: 45,
-    completedTasks: 32,
-    inProgressTasks: 8,
-    todoTasks: 5,
-    completionRate: 71,
-    streak: 7,
-  },
-  groups: [
-    { id: 1, name: "프로젝트 팀", role: "팀장", color: "#3b82f6", tasks: 12 },
-    { id: 2, name: "가족", role: "아빠", color: "#10b981", tasks: 3 },
-    { id: 3, name: "운동 모임", role: "멤버", color: "#8b5cf6", tasks: 7 },
-  ],
-  recentActivities: [
-    {
-      id: 1,
-      action: "완료",
-      task: "프로젝트 기획서 작성",
-      group: "프로젝트 팀",
-      date: "2024-01-20",
-    },
-    {
-      id: 2,
-      action: "추가",
-      task: "UI/UX 디자인",
-      group: "프로젝트 팀",
-      date: "2024-01-19",
-    },
-    {
-      id: 3,
-      action: "완료",
-      task: "장보기",
-      group: "가족",
-      date: "2024-01-19",
-    },
-    {
-      id: 4,
-      action: "수정",
-      task: "헬스장 가기",
-      group: "운동 모임",
-      date: "2024-01-18",
-    },
-    {
-      id: 5,
-      action: "완료",
-      task: "코드 리뷰",
-      group: "프로젝트 팀",
-      date: "2024-01-18",
-    },
-  ],
-  achievements: [
-    {
-      id: 1,
-      title: "첫 할일 완료",
-      description: "첫 번째 할일을 완료했습니다",
-      icon: "🎯",
-      earned: true,
-    },
-    {
-      id: 2,
-      title: "연속 7일",
-      description: "7일 연속 할일을 완료했습니다",
-      icon: "🔥",
-      earned: true,
-    },
-    {
-      id: 3,
-      title: "팀 플레이어",
-      description: "3개 이상의 그룹에 참여했습니다",
-      icon: "👥",
-      earned: true,
-    },
-    {
-      id: 4,
-      title: "완료율 80%",
-      description: "할일 완료율 80%를 달성했습니다",
-      icon: "⭐",
-      earned: false,
-    },
-  ],
-};
+    totalTasks: number;
+    completedTasks: number;
+    inProgressTasks: number;
+    todoTasks: number;
+    completionRate: number;
+    streak: number;
+  };
+  groups: Group[];
+  recentActivities: Activity[];
+  achievements: Achievement[];
+}
 
-const User = () => {
+// 시간 형식 변환 함수
+function formatTimeAgo(timeAgo: string): string {
+  // "hours ago" -> "x시간 전" 형식으로 변환
+  if (timeAgo.includes("hours ago")) {
+    const hours = timeAgo.match(/(\d+)\s*hours?\s*ago/);
+    if (hours) {
+      return `${hours[1]}시간 전`;
+    }
+  }
+
+  // "minutes ago" -> "x분 전" 형식으로 변환
+  if (timeAgo.includes("minutes ago")) {
+    const minutes = timeAgo.match(/(\d+)\s*minutes?\s*ago/);
+    if (minutes) {
+      return `${minutes[1]}분 전`;
+    }
+  }
+
+  // "days ago" -> "x일 전" 형식으로 변환
+  if (timeAgo.includes("days ago")) {
+    const days = timeAgo.match(/(\d+)\s*days?\s*ago/);
+    if (days) {
+      return `${days[1]}일 전`;
+    }
+  }
+
+  // "weeks ago" -> "x주 전" 형식으로 변환
+  if (timeAgo.includes("weeks ago")) {
+    const weeks = timeAgo.match(/(\d+)\s*weeks?\s*ago/);
+    if (weeks) {
+      return `${weeks[1]}주 전`;
+    }
+  }
+
+  // "months ago" -> "x개월 전" 형식으로 변환
+  if (timeAgo.includes("months ago")) {
+    const months = timeAgo.match(/(\d+)\s*months?\s*ago/);
+    if (months) {
+      return `${months[1]}개월 전`;
+    }
+  }
+
+  // "years ago" -> "x년 전" 형식으로 변환
+  if (timeAgo.includes("years ago")) {
+    const years = timeAgo.match(/(\d+)\s*years?\s*ago/);
+    if (years) {
+      return `${years[1]}년 전`;
+    }
+  }
+
+  // 이미 한국어 형식이거나 변환할 수 없는 경우 그대로 반환
+  return timeAgo;
+}
+
+export default function UserPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats>({
+    totalTodoCount: 0,
+    completedTodoCount: 0,
+    completedRate: 0,
+    groupTodoRate: 0,
+    dailyCompletedCount: [0, 0, 0, 0, 0, 0, 0],
+  });
+  const [activityReport, setActivityReport] = useState<ActivityReport>({
+    completedCount: 0,
+    inProgressCount: 0,
+    inCompletedCount: 0,
+    userMaxStreak: 0,
+    userCurrentStreak: 0,
+    completeRate: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editingIntroduction, setEditingIntroduction] = useState("");
+  const [editingNickname, setEditingNickname] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
-  const getActionClass = (action: string) => {
-    switch (action) {
-      case "완료":
-        return styles.actionCompleted;
-      case "추가":
-        return styles.actionAdded;
-      case "수정":
-        return styles.actionModified;
-      default:
-        return "";
+  // Mock data for fallback
+  const mockUserData: UserData = useMemo(
+    () => ({
+      id: 1,
+      name: "한이음",
+      email: "hanieum2@gmail.com",
+      avatar:
+        "https://lh3.googleusercontent.com/a/ACg8ocLBnmQVTKR8Hb7ULHdRNp5LBr99_hjysfpiorAR0yp-f8hKJw=s96-c",
+      joinDate: "2024-01-01",
+      bio: "프로젝트 관리 전문가입니다.",
+      introduction: "프로젝트 관리 전문가입니다.",
+      stats: {
+        totalTasks: 45,
+        completedTasks: 32,
+        inProgressTasks: 8,
+        todoTasks: 5,
+        completionRate: 71,
+        streak: 7,
+      },
+      groups: [
+        {
+          id: 1,
+          groupName: "프로젝트 개발팀",
+          description: "메인 프로젝트 개발",
+          numMember: 12,
+        },
+        {
+          id: 2,
+          groupName: "디자인 시스템",
+          description: "UI/UX 디자인",
+          numMember: 8,
+        },
+        {
+          id: 3,
+          groupName: "주간 스터디",
+          description: "기술 스터디",
+          numMember: 10,
+        },
+      ],
+      recentActivities: [
+        {
+          action: "완료",
+          todoContent: "프로젝트 제안서 작성",
+          timeAgo: "2시간 전",
+        },
+        {
+          action: "참석",
+          todoContent: "팀 미팅",
+          timeAgo: "4시간 전",
+        },
+        {
+          action: "진행중",
+          todoContent: "코드 리뷰",
+          timeAgo: "5시간 전",
+        },
+        {
+          action: "대기",
+          todoContent: "디자인 시안 검토",
+          timeAgo: "1일 전",
+        },
+      ],
+      achievements: [
+        {
+          id: 1,
+          title: "첫 할일 완료",
+          description: "첫 번째 할일을 완료했습니다",
+          icon: "🎯",
+          earned: true,
+        },
+        {
+          id: 2,
+          title: "연속 7일",
+          description: "7일 연속으로 할일을 완료했습니다",
+          icon: "🔥",
+          earned: true,
+        },
+        {
+          id: 3,
+          title: "팀 플레이어",
+          description: "10개 이상의 그룹에 참여했습니다",
+          icon: "👥",
+          earned: false,
+        },
+      ],
+    }),
+    []
+  );
+
+  // 주간 활동 데이터는 weeklyStats.dailyCompletedCount에서 가져옴
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+
+        // Get stored user data first
+        const storedUser = getStoredUser();
+        const storedToken = getStoredToken();
+
+        console.log("👤 저장된 사용자:", storedUser);
+        console.log("🔑 저장된 토큰:", storedToken ? "존재함" : "없음");
+
+        if (!storedToken) {
+          console.warn("⚠️ 토큰이 없어서 기본 데이터 사용");
+          setUserData(mockUserData);
+          return;
+        }
+
+        // Try to fetch data from API
+        const [profileData, , groups, activities, weeklyData, reportData] =
+          await Promise.all([
+            getUserProfile().catch(() => {
+              console.log("프로필 API 실패, 기본 데이터 사용");
+              return null;
+            }),
+            getUserStats().catch(() => {
+              console.log("통계 API 실패, 기본 데이터 사용");
+              return null;
+            }),
+            getUserGroups().catch(() => {
+              console.log("그룹 API 실패, 기본 데이터 사용");
+              return null;
+            }),
+            getRecentActivities().catch(() => {
+              console.log("활동 API 실패, 기본 데이터 사용");
+              return null;
+            }),
+            getWeeklyStats().catch(() => {
+              console.log("주간 데이터 API 실패, 기본 데이터 사용");
+              return null;
+            }),
+            getActivityReport().catch(() => {
+              console.log("활동 전황 API 실패, 기본 데이터 사용");
+              return null;
+            }),
+            getAchievements().catch(() => {
+              console.log("업적 API 실패, 기본 데이터 사용");
+              return null;
+            }),
+          ]);
+
+        // Use stored user data or mock data
+        const finalUserData = storedUser
+          ? {
+              ...mockUserData,
+              name: storedUser.nickname || mockUserData.name,
+              email: storedUser.email || mockUserData.email,
+              avatar:
+                storedUser.imageUrl ||
+                profileData?.imageUrl ||
+                mockUserData.avatar,
+              imageUrl: storedUser.imageUrl || profileData?.imageUrl,
+              bio: storedUser.introduction || mockUserData.bio,
+              introduction:
+                storedUser.introduction ||
+                profileData?.introduction ||
+                mockUserData.introduction,
+              nickname: storedUser.nickname || profileData?.nickname,
+              groups: groups || mockUserData.groups,
+              recentActivities: activities || mockUserData.recentActivities,
+            }
+          : {
+              ...mockUserData,
+              introduction:
+                profileData?.introduction || mockUserData.introduction,
+              nickname: profileData?.nickname,
+              groups: groups || mockUserData.groups,
+              recentActivities: activities || mockUserData.recentActivities,
+            };
+
+        console.log("🔍 최종 사용자 데이터:", finalUserData);
+        console.log("🔍 Avatar URL:", finalUserData.avatar);
+        console.log("🔍 ProfileData:", profileData);
+        console.log("🔍 StoredUser:", storedUser);
+        setUserData(finalUserData);
+
+        // 주간 데이터 설정
+        if (weeklyData) {
+          setWeeklyStats(weeklyData);
+        }
+
+        // 활동 전황 데이터 설정
+        if (reportData) {
+          setActivityReport(reportData);
+        }
+
+        console.log("✅ 사용자 데이터 로드 완료:", finalUserData);
+        console.log("✅ 그룹 데이터 로드 완료:", groups);
+        console.log("✅ 주간 데이터 로드 완료:", weeklyData);
+        console.log("✅ 활동 전황 데이터 로드 완료:", reportData);
+      } catch (error) {
+        console.error("사용자 데이터 로드 실패:", error);
+        setUserData(mockUserData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [mockUserData]);
+
+  // 프로필 수정 함수
+  const handleEditProfile = () => {
+    if (userData) {
+      setEditingIntroduction(userData.introduction || "");
+      setEditingNickname(userData.nickname || userData.name || "");
+      setSelectedImage(null);
+      setImagePreview(null);
+      setIsEditingProfile(true);
     }
   };
 
+  // 이미지 선택 핸들러
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const profileData = {
+        nickname: editingNickname,
+        introduction: editingIntroduction,
+        profileImage: selectedImage || undefined,
+        imageUrl: userData?.imageUrl, // 기존 이미지 URL 추가
+      };
+
+      const updatedUser = await updateUserProfile(profileData);
+      setUserData((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...updatedUser,
+              avatar: updatedUser.imageUrl || prev.avatar, // avatar 필드도 업데이트
+            }
+          : null
+      );
+
+      // localStorage 업데이트
+      const storedUser = getStoredUser();
+      if (storedUser) {
+        const updatedStoredUser = {
+          ...storedUser,
+          nickname: updatedUser.nickname,
+          introduction: updatedUser.introduction,
+          imageUrl: updatedUser.imageUrl || storedUser.imageUrl,
+        };
+        localStorage.setItem("user", JSON.stringify(updatedStoredUser));
+        console.log("✅ localStorage 업데이트 완료:", updatedStoredUser);
+      }
+
+      setIsEditingProfile(false);
+      setSelectedImage(null);
+      setImagePreview(null);
+    } catch (error) {
+      console.error("프로필 수정 실패:", error);
+      alert("프로필 수정에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingSpinner}></div>
+        <p>사용자 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className={styles.errorContainer}>
+        <p>사용자 정보를 불러올 수 없습니다.</p>
+        <Button onClick={() => navigate("/login")}>로그인 페이지로</Button>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.user}>
+    <div className={styles.container}>
+      {/* API Warning Banner */}
+
       {/* Header */}
       <header className={styles.header}>
-        <div className={styles.container}>
-          <div className={styles.headerContent}>
-            <div className={styles.headerLeft}>
-              <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <line x1="19" y1="12" x2="5" y2="12"></line>
-                  <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-              </Button>
-              <h1>프로필</h1>
-            </div>
-            <Button variant="outline" size="sm">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-              설정
+        <div className={styles.headerContent}>
+          <div className={styles.headerLeft}>
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />
             </Button>
+            <h1 className={styles.headerTitle}>프로필</h1>
+            <button
+              className={styles.helpButton}
+              onClick={() => setIsHelpModalOpen(true)}
+            >
+              <img
+                src={questionmarkIcon}
+                alt="도움말"
+                className={styles.helpIcon}
+              />
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className={styles.content}>
-        <div className={styles.container}>
-          <div className={styles.grid}>
-            {/* Left Section - Profile Info */}
-            <div className={styles.leftSection}>
-              {/* Profile Card */}
-              <Card>
-                <CardContent>
-                  <div className={styles.profileCard}>
-                    <div className={styles.avatarWrapper}>
-                      <Avatar className={styles.avatar}>
-                        <AvatarImage src={mockUserData.avatar} />
-                        <AvatarFallback>{mockUserData.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <button className={styles.editButton}>
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                        >
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                    <div className={styles.profileInfo}>
-                      <h2>{mockUserData.name}</h2>
-                      <p className={styles.email}>{mockUserData.email}</p>
-                    </div>
-                    <p className={styles.bio}>{mockUserData.bio}</p>
-                    <div className={styles.joinDate}>
-                      가입일: {mockUserData.joinDate}
-                    </div>
+      <main className={styles.main}>
+        <div className={styles.grid}>
+          {/* Left Section */}
+          <div className={styles.leftSection}>
+            {/* Profile Card */}
+            <Card className={styles.profileCard}>
+              <CardContent className={styles.profileContent}>
+                <div className={styles.profileInfo}>
+                  <Avatar className={styles.avatar}>
+                    {userData.imageUrl ? (
+                      <AvatarImage
+                        src={userData.imageUrl}
+                        alt={`${userData.name}의 프로필 이미지`}
+                        onError={(e) => {
+                          console.log(
+                            "❌ 이미지 로드 실패:",
+                            userData.imageUrl
+                          );
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : null}
+                    <AvatarFallback className={styles.avatarFallback}>
+                      {userData.name ? userData.name[0] : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className={styles.userInfo}>
+                    <h2 className={styles.userName}>
+                      {userData.nickname || userData.name}
+                    </h2>
+                    <p className={styles.userEmail}>{userData.email}</p>
                   </div>
-                </CardContent>
-              </Card>
+                  <p className={styles.userBio}>
+                    {userData.introduction || userData.bio}
+                  </p>
+                </div>
+                <div className={styles.profileActions}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={styles.editButton}
+                    onClick={handleEditProfile}
+                  >
+                    <Edit className="h-4 w-4" />
+                    프로필 수정
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Quick Stats */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                    </svg>
-                    빠른 통계
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className={styles.quickStats}>
-                    <div className={styles.statsRow}>
-                      <div className={styles.statBox}>
-                        <div className={styles.statValue}>
-                          {mockUserData.stats.completedTasks}
-                        </div>
-                        <div className={styles.statLabel}>완료</div>
-                      </div>
-                      <div className={styles.statBox}>
-                        <div className={styles.statValue}>
-                          {mockUserData.stats.inProgressTasks}
-                        </div>
-                        <div className={styles.statLabel}>진행중</div>
-                      </div>
+            {/* Quick Stats */}
+            <Card className={styles.statsCard}>
+              <CardHeader>
+                <CardTitle className={styles.cardTitle}>
+                  <TrendingUp className="h-4 w-4" />
+                  빠른 통계
+                </CardTitle>
+              </CardHeader>
+              <CardContent className={styles.statsContent}>
+                <div className={styles.statsGrid}>
+                  <div className={styles.statItem}>
+                    <div className={styles.statNumber}>
+                      {activityReport.completedCount}
                     </div>
-                    <div className={styles.progressSection}>
-                      <div className={styles.progressHeader}>
-                        <span>완료율</span>
-                        <span>{mockUserData.stats.completionRate}%</span>
-                      </div>
-                      <div className={styles.progressBar}>
-                        <div
-                          className={styles.progressFill}
-                          style={{
-                            width: `${mockUserData.stats.completionRate}%`,
-                          }}
-                        />
-                      </div>
+                    <div className={styles.statLabel}>완료한 할일</div>
+                  </div>
+                  <div className={styles.statItem}>
+                    <div className={styles.statNumber}>
+                      {activityReport.userMaxStreak}
                     </div>
-                    <div className={styles.streakBox}>
-                      <div className={styles.streakIcon}>🔥</div>
-                      <span className={styles.streakLabel}>연속 완료</span>
-                      <span className={styles.streakValue}>
-                        {mockUserData.stats.streak}일
+                    <div className={styles.statLabel}>최대 연속일</div>
+                  </div>
+                </div>
+                <div className={styles.progressSection}>
+                  <div className={styles.progressHeader}>
+                    <span className={styles.progressLabel}>완료율</span>
+                    <span className={styles.progressValue}>
+                      {activityReport.completeRate}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={activityReport.completeRate}
+                    className={styles.progress}
+                  />
+                </div>
+                <div className={styles.streakSection}>
+                  <div className={styles.streakInfo}>
+                    <Flame className="h-5 w-5" />
+                    <span className={styles.streakLabel}>연속 완료</span>
+                  </div>
+                  <span className={styles.streakNumber}>
+                    {activityReport.userCurrentStreak}일
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Groups */}
+            <Card className={styles.groupsCard}>
+              <CardHeader>
+                <CardTitle className={styles.cardTitle}>
+                  <Users className="h-4 w-4" />
+                  참여 그룹
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className={styles.groupsList}>
+                  {userData.groups.map((group) => (
+                    <div key={group.id} className={styles.groupItem}>
+                      <div className={styles.groupInfo}>
+                        <Users className="h-4 w-4" />
+                        <span className={styles.groupName}>
+                          {group.groupName}
+                        </span>
+                      </div>
+                      <span className={styles.groupMembers}>
+                        {group.numMember}명
                       </span>
                     </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Section */}
+          <div className={styles.rightSection}>
+            {/* Activity Overview */}
+            <Card className={styles.activityCard}>
+              <CardHeader>
+                <CardTitle className={styles.cardTitle}>활동 전황</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className={styles.activityGrid}>
+                  <div className={styles.activityItem}>
+                    <CheckCircle2 className="h-8 w-8" />
+                    <div className={styles.activityNumber}>
+                      {activityReport.completedCount}
+                    </div>
+                    <div className={styles.activityLabel}>완료한 할일</div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className={styles.activityItem}>
+                    <Clock className="h-8 w-8" />
+                    <div className={styles.activityNumber}>
+                      {activityReport.inProgressCount}
+                    </div>
+                    <div className={styles.activityLabel}>진행중인 할일</div>
+                  </div>
+                  <div className={styles.activityItem}>
+                    <Circle className="h-8 w-8" />
+                    <div className={styles.activityNumber}>
+                      {activityReport.inCompletedCount}
+                    </div>
+                    <div className={styles.activityLabel}>미완료 할일</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Right Section - Detailed Info */}
-            <div className={styles.rightSection}>
-              {/* Tabs */}
-              <div className={styles.tabs}>
-                <button
-                  className={
-                    activeTab === "overview" ? styles.tabActive : styles.tab
-                  }
-                  onClick={() => setActiveTab("overview")}
-                >
-                  개요
-                </button>
-                <button
-                  className={
-                    activeTab === "groups" ? styles.tabActive : styles.tab
-                  }
-                  onClick={() => setActiveTab("groups")}
-                >
-                  그룹
-                </button>
-                <button
-                  className={
-                    activeTab === "activity" ? styles.tabActive : styles.tab
-                  }
-                  onClick={() => setActiveTab("activity")}
-                >
-                  활동
-                </button>
-                <button
-                  className={
-                    activeTab === "achievements" ? styles.tabActive : styles.tab
-                  }
-                  onClick={() => setActiveTab("achievements")}
-                >
-                  성취
-                </button>
-              </div>
+            {/* Weekly Goals */}
+            <Card className={styles.goalsCard}>
+              <CardHeader>
+                <CardTitle className={styles.cardTitle}>이번 주 목표</CardTitle>
+              </CardHeader>
+              <CardContent className={styles.goalsContent}>
+                <div className={styles.goalItem}>
+                  <div className={styles.goalHeader}>
+                    <span className={styles.goalLabel}>주간 활동 완료</span>
+                    <span className={styles.goalValue}>
+                      {weeklyStats.completedTodoCount}/
+                      {weeklyStats.totalTodoCount}
+                    </span>
+                  </div>
+                  <Progress
+                    value={weeklyStats.completedRate}
+                    className={styles.goalProgress}
+                  />
+                </div>
+                <div className={styles.goalItem}>
+                  <div className={styles.goalHeader}>
+                    <span className={styles.goalLabel}>그룹 참여도</span>
+                    <span className={styles.goalValue}>
+                      {weeklyStats.groupTodoRate}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={weeklyStats.groupTodoRate}
+                    className={styles.goalProgress}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Overview Tab */}
-              {activeTab === "overview" && (
-                <div className={styles.tabContent}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>할일 현황</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className={styles.overviewGrid}>
-                        <div className={styles.overviewItem}>
-                          <svg
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            className={styles.iconCompleted}
-                          >
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                          </svg>
-                          <div className={styles.overviewValue}>
-                            {mockUserData.stats.completedTasks}
-                          </div>
-                          <div className={styles.overviewLabel}>
-                            완료된 할일
-                          </div>
-                        </div>
-                        <div className={styles.overviewItem}>
-                          <svg
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            className={styles.iconProgress}
-                          >
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          <div className={styles.overviewValue}>
-                            {mockUserData.stats.inProgressTasks}
-                          </div>
-                          <div className={styles.overviewLabel}>
-                            진행중인 할일
-                          </div>
-                        </div>
-                        <div className={styles.overviewItem}>
-                          <svg
-                            width="32"
-                            height="32"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            className={styles.iconPending}
-                          >
-                            <circle cx="12" cy="12" r="10"></circle>
-                          </svg>
-                          <div className={styles.overviewValue}>
-                            {mockUserData.stats.todoTasks}
-                          </div>
-                          <div className={styles.overviewLabel}>
-                            대기중인 할일
-                          </div>
-                        </div>
+            {/* Weekly Activity Chart */}
+            <Card className={styles.chartCard}>
+              <CardHeader>
+                <CardTitle className={styles.cardTitle}>
+                  <BarChart3 className="h-4 w-4" />
+                  주간 활동 차트
+                </CardTitle>
+                <p className={styles.chartDescription}>
+                  최근 7일간의 완료한 작업 수
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className={styles.chartContainer}>
+                  {weeklyStats.dailyCompletedCount.map((count, index) => {
+                    // 더 간단한 높이 계산
+                    let barHeight;
+                    if (count === 0) {
+                      barHeight = 8; // 0개일 때 8px
+                    } else {
+                      barHeight = 8 + count * 20; // 1개당 20px씩 추가
+                    }
+
+                    console.log(
+                      `요일 ${index}: count=${count}, barHeight=${barHeight}px`
+                    );
+
+                    return (
+                      <div key={index} className={styles.chartBar}>
+                        <div
+                          className={styles.bar}
+                          style={{
+                            height: `${barHeight}px`,
+                            backgroundColor: count > 0 ? "#22c55e" : "#e5e7eb",
+                            minHeight: "8px",
+                            width: "100%",
+                            borderRadius: "2px 2px 0 0",
+                          }}
+                        />
+                        <span className={styles.barLabel}>
+                          {["월", "화", "수", "목", "금", "토", "일"][index]}
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>이번 주 목표</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className={styles.goalsSection}>
-                        <div className={styles.goalItem}>
-                          <div className={styles.goalHeader}>
-                            <span>주간 할일 완료</span>
-                            <span>12/15</span>
-                          </div>
-                          <div className={styles.progressBar}>
-                            <div
-                              className={styles.progressFill}
-                              style={{ width: "80%" }}
+            <div className={styles.bottomGrid}>
+              {/* Recent Activities */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className={styles.cardTitle}>최근 활동</CardTitle>
+                  <p className={styles.recentDescription}>최근 작업 내역</p>
+                </CardHeader>
+                <div className={styles.recentCard}>
+                  <div className={styles.activitiesList}>
+                    {userData.recentActivities.map((activity, index) => {
+                      // action에 따라 이미지 결정
+                      let iconImage;
+                      let iconAlt;
+
+                      switch (activity.action) {
+                        case "COMPLETE":
+                          iconImage = completeImage;
+                          iconAlt = "완료";
+                          break;
+                        case "CREATE":
+                          iconImage = createImage;
+                          iconAlt = "생성";
+                          break;
+                        case "UNCOMPLETED":
+                          iconImage = uncompleteImage;
+                          iconAlt = "미완료";
+                          break;
+                        default:
+                          iconImage = createImage; // 기본값
+                          iconAlt = "활동";
+                          break;
+                      }
+
+                      return (
+                        <div key={index} className={styles.activityListItem}>
+                          <div className={styles.activityIcon}>
+                            <img
+                              src={iconImage}
+                              alt={iconAlt}
+                              className={styles.activityIconImage}
                             />
                           </div>
-                        </div>
-                        <div className={styles.goalItem}>
-                          <div className={styles.goalHeader}>
-                            <span>그룹 참여도</span>
-                            <span>85%</span>
-                          </div>
-                          <div className={styles.progressBar}>
-                            <div
-                              className={styles.progressFill}
-                              style={{ width: "85%" }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* Groups Tab */}
-              {activeTab === "groups" && (
-                <div className={styles.tabContent}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>참여 중인 그룹</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className={styles.groupsList}>
-                        {mockUserData.groups.map((group) => (
-                          <div key={group.id} className={styles.groupItem}>
-                            <div className={styles.groupItemLeft}>
-                              <div
-                                className={styles.groupColor}
-                                style={{ backgroundColor: group.color }}
-                              />
-                              <div className={styles.groupItemInfo}>
-                                <h3>{group.name}</h3>
-                                <p>{group.role}</p>
-                              </div>
-                            </div>
-                            <div className={styles.groupItemRight}>
-                              <Badge variant="secondary">
-                                {group.tasks}개 할일
-                              </Badge>
-                              <Button size="sm" variant="outline">
-                                보기
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* Activity Tab */}
-              {activeTab === "activity" && (
-                <div className={styles.tabContent}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>최근 활동</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className={styles.activityList}>
-                        {mockUserData.recentActivities.map((activity) => (
-                          <div
-                            key={activity.id}
-                            className={styles.activityItem}
-                          >
-                            <Badge className={getActionClass(activity.action)}>
-                              {activity.action}
-                            </Badge>
-                            <div className={styles.activityContent}>
-                              <p className={styles.activityTask}>
-                                {activity.task}
-                              </p>
-                              <p className={styles.activityGroup}>
-                                {activity.group}
-                              </p>
-                            </div>
-                            <div className={styles.activityDate}>
-                              {activity.date}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* Achievements Tab */}
-              {activeTab === "achievements" && (
-                <div className={styles.tabContent}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                        >
-                          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                          <path d="M4 22h16"></path>
-                          <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                        </svg>
-                        성취 목록
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className={styles.achievementsGrid}>
-                        {mockUserData.achievements.map((achievement) => (
-                          <div
-                            key={achievement.id}
-                            className={
-                              achievement.earned
-                                ? styles.achievementEarned
-                                : styles.achievementLocked
-                            }
-                          >
-                            <div className={styles.achievementHeader}>
-                              <div className={styles.achievementIcon}>
-                                {achievement.icon}
-                              </div>
-                              <div className={styles.achievementInfo}>
-                                <h3>{achievement.title}</h3>
-                                {achievement.earned && (
-                                  <Badge variant="secondary">달성</Badge>
-                                )}
-                              </div>
-                            </div>
-                            <p className={styles.achievementDesc}>
-                              {achievement.description}
+                          <div className={styles.activityDetails}>
+                            <p className={styles.activityTask}>
+                              {activity.todoContent}
+                            </p>
+                            <p className={styles.activityDate}>
+                              {formatTimeAgo(activity.timeAgo)}
                             </p>
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
+              </Card>
             </div>
           </div>
         </div>
       </main>
+
+      {/* 프로필 수정 다이얼로그 */}
+      <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>프로필 수정</DialogTitle>
+          </DialogHeader>
+          <div className={styles.profileEditForm}>
+            <div className={styles.profileInfo}>
+              {/* 프로필 이미지 */}
+              <div className={styles.profileField}>
+                <label className={styles.fieldLabel}>프로필 이미지</label>
+                <div className={styles.imageUploadSection}>
+                  <div className={styles.imagePreview}>
+                    <img
+                      src={imagePreview || userData?.imageUrl || ""}
+                      alt="프로필 미리보기"
+                      className={styles.previewImage}
+                      onError={(e) => {
+                        // 미리보기 이미지가 없거나 로드 실패 시 비움
+                        e.currentTarget.src = "";
+                      }}
+                    />
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className={styles.imageInput}
+                    id="profile-image-input"
+                  />
+                  <label
+                    htmlFor="profile-image-input"
+                    className={styles.imageUploadButton}
+                  >
+                    이미지 선택
+                  </label>
+                </div>
+              </div>
+
+              {/* 닉네임 */}
+              <div className={styles.profileField}>
+                <label className={styles.fieldLabel}>닉네임</label>
+                <input
+                  type="text"
+                  value={editingNickname}
+                  onChange={(e) => setEditingNickname(e.target.value)}
+                  placeholder="닉네임을 입력하세요"
+                  className={styles.nicknameInput}
+                />
+              </div>
+
+              {/* 이메일 (읽기 전용) */}
+              <div className={styles.profileField}>
+                <label className={styles.fieldLabel}>이메일</label>
+                <p className={styles.fieldValue}>{userData?.email}</p>
+              </div>
+
+              {/* 소개 */}
+              <div className={styles.profileField}>
+                <label className={styles.fieldLabel}>소개</label>
+                <Textarea
+                  value={editingIntroduction}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    setEditingIntroduction(e.target.value)
+                  }
+                  placeholder="자기소개를 입력하세요"
+                  className={styles.introductionTextarea}
+                />
+              </div>
+            </div>
+            <div className={styles.dialogActions}>
+              <Button
+                onClick={handleSaveProfile}
+                className={styles.primaryButton}
+              >
+                저장
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditingProfile(false)}
+                className={styles.secondaryButton}
+              >
+                취소
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 도움말 모달 */}
+      <Dialog open={isHelpModalOpen} onOpenChange={setIsHelpModalOpen}>
+        <DialogContent className={styles.helpModal}>
+          <DialogHeader>
+            <DialogTitle>프로필 페이지 사용법</DialogTitle>
+          </DialogHeader>
+          <div className={styles.helpContent}>
+            <div className={styles.helpSection}>
+              <h3 className={styles.helpSectionTitle}>👤 프로필 관리</h3>
+              <ul className={styles.helpList}>
+                <li>
+                  "프로필 수정" 버튼으로 닉네임, 소개, 프로필 이미지를 변경할 수
+                  있습니다
+                </li>
+                <li>프로필 이미지는 파일을 선택하여 업로드할 수 있습니다</li>
+                <li>이메일은 변경할 수 없습니다</li>
+              </ul>
+            </div>
+
+            <div className={styles.helpSection}>
+              <h3 className={styles.helpSectionTitle}>📊 통계 정보</h3>
+              <ul className={styles.helpList}>
+                <li>완료한 할일 수와 최대 연속일을 확인할 수 있습니다</li>
+                <li>완료율과 현재 연속 완료일을 볼 수 있습니다</li>
+                <li>주간 목표 달성률을 확인할 수 있습니다</li>
+              </ul>
+            </div>
+
+            <div className={styles.helpSection}>
+              <h3 className={styles.helpSectionTitle}>👥 그룹 정보</h3>
+              <ul className={styles.helpList}>
+                <li>참여 중인 그룹 목록을 확인할 수 있습니다</li>
+                <li>각 그룹의 멤버 수를 볼 수 있습니다</li>
+                <li>최근 활동 내역을 확인할 수 있습니다</li>
+              </ul>
+            </div>
+          </div>
+          <div className={styles.helpFooter}>
+            <Button onClick={() => setIsHelpModalOpen(false)}>확인</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default User;
+}

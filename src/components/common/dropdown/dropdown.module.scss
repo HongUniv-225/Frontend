@@ -4,10 +4,8 @@
 }
 
 .dropdownContent {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
-  z-index: 50;
+  position: fixed;
+  z-index: 9999;
   min-width: 8rem;
   background-color: white;
   border: 1px solid #e5e7eb;
@@ -15,6 +13,11 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   padding: 0.25rem;
   animation: slideDown 0.15s ease-out;
+
+  /* 화면 아래에 있을 때 위로 표시되도록 조정 */
+  &.dropdownUp {
+    animation: slideUp 0.15s ease-out;
+  }
 }
 
 .dropdownItem {
@@ -43,6 +46,17 @@
   from {
     opacity: 0;
     transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
   }
   to {
     opacity: 1;

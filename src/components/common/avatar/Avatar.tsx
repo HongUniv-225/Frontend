@@ -11,9 +11,33 @@ interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const Avatar = ({ children, className, ...props }: AvatarProps) => {
+  // children에서 AvatarImage만 찾아서 렌더링
+  const findAvatarImage = (children: ReactNode): ReactNode => {
+    if (Array.isArray(children)) {
+      return children.find(
+        (child) =>
+          typeof child === "object" &&
+          child !== null &&
+          "type" in child &&
+          child.type === AvatarImage
+      );
+    }
+
+    if (
+      typeof children === "object" &&
+      children !== null &&
+      "type" in children &&
+      children.type === AvatarImage
+    ) {
+      return children;
+    }
+
+    return children;
+  };
+
   return (
     <div className={cn(styles.avatar, className)} {...props}>
-      {children}
+      {findAvatarImage(children)}
     </div>
   );
 };
@@ -29,7 +53,6 @@ export const AvatarImage = ({
   className,
   ...props
 }: AvatarImageProps) => {
-  if (!src) return null;
   return (
     <img
       src={src}

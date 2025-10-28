@@ -60,7 +60,9 @@ export const DropdownMenuTrigger = ({
     "props" in children
   ) {
     const child = children as React.ReactElement;
-    return <child.type {...(child.props as any)} onClick={() => setOpen(!open)} />;
+    return (
+      <child.type {...(child.props as any)} onClick={() => setOpen(!open)} />
+    );
   }
 
   return (
@@ -81,6 +83,7 @@ export const DropdownMenuContent = ({
 }: DropdownMenuContentProps) => {
   const { open, setOpen } = useDropdown();
   const ref = useRef<HTMLDivElement>(null);
+  const [isUpward, setIsUpward] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -91,6 +94,22 @@ export const DropdownMenuContent = ({
 
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
+
+      // 화면 위치 감지하여 위/아래 방향 결정
+      const checkPosition = () => {
+        if (ref.current) {
+          const rect = ref.current.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+          const spaceBelow = viewportHeight - rect.top;
+          const spaceAbove = rect.top;
+
+          // 아래쪽 공간이 부족하면 위로 표시
+          setIsUpward(spaceBelow < 200 && spaceAbove > 200);
+        }
+      };
+
+      // 약간의 지연 후 위치 체크 (DOM 렌더링 완료 후)
+      setTimeout(checkPosition, 0);
     }
 
     return () => {
@@ -101,7 +120,15 @@ export const DropdownMenuContent = ({
   if (!open) return null;
 
   return (
-    <div ref={ref} className={cn(styles.dropdownContent, className)} {...props}>
+    <div
+      ref={ref}
+      className={cn(
+        styles.dropdownContent,
+        isUpward && styles.dropdownUp,
+        className
+      )}
+      {...props}
+    >
       {children}
     </div>
   );

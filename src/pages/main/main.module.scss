@@ -1,76 +1,96 @@
-.main {
+// Container
+.container {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: #f8f9fa;
 }
 
+// Header
 .header {
-  border-bottom: 1px solid #e5e7eb;
-  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+}
 
-  .container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 1.5rem 1rem;
-  }
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  .headerContent {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
-  .headerLeft {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
-    .logo {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 0.5rem;
-      background-color: #646cff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
+.helpButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
 
-    h1 {
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: #111827;
-      margin: 0;
-    }
-  }
-
-  .headerRight {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  &:hover {
+    background-color: #f3f4f6;
   }
 }
 
-.content {
-  .container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-  }
+.helpIcon {
+  width: 18px;
+  height: 18px;
+}
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
+.logoIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background-color: #171717;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
 
-    @media (min-width: 1024px) {
-      grid-template-columns: repeat(3, 1fr);
-    }
+.title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+// Main Content
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 
-.leftSection,
-.centerSection,
-.rightSection {
+// Left Section
+.leftSection {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -80,132 +100,166 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #111827;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    svg {
-      stroke-width: 2;
-    }
-  }
 }
 
-.starIcon {
-  stroke: #eab308;
-  fill: #eab308;
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
 }
 
-.groupList {
+.groupsList {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.groupCard {
+.groupCardContent {
+  padding: 1.5rem;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.groupInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.groupColor {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+
+  &.bg-blue-500 {
+    background-color: #171717;
+  }
+
+  &.bg-green-500 {
+    background-color: #10b981;
+  }
+
+  &.bg-purple-500 {
+    background-color: #8b5cf6;
+  }
+}
+
+.groupName {
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.groupFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.memberInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.memberIcon {
+  height: 1rem;
+  width: 1rem;
+  color: #6b7280;
+}
+
+.memberCount {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+// Empty Groups State
+.emptyGroups {
+  text-align: center;
+  padding: 2rem 0;
+  color: #6b7280;
+}
+
+.emptyGroupsIcon {
+  height: 3rem;
+  width: 3rem;
+  margin: 0 auto 1rem;
+  opacity: 0.3;
+}
+
+.emptyGroupsText {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+// Center Section
+.centerSection {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-
-  .groupHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    .groupInfo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-
-      .groupColor {
-        width: 1rem;
-        height: 1rem;
-        border-radius: 9999px;
-      }
-
-      h3 {
-        font-weight: 600;
-        color: #111827;
-        margin: 0;
-      }
-    }
-  }
-
-  .groupFooter {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    .groupMembers {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      color: #6b7280;
-
-      svg {
-        stroke-width: 2;
-      }
-    }
-  }
+  gap: 1.5rem;
 }
 
 .dateHeader {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.dateNavigation {
+  display: flex;
+  align-items: center;
   gap: 1rem;
 }
 
-.select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  background-color: white;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
+.dateButton {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  padding: 0.5rem;
 
-  &:focus {
-    outline: none;
-    border-color: #646cff;
-    box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+  &:hover {
+    background-color: #f3f4f6;
   }
+}
+
+.todosContent {
+  padding: 1.5rem;
 }
 
 .emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3rem 0;
   text-align: center;
-
-  svg {
-    color: #d1d5db;
-    opacity: 0.3;
-    margin-bottom: 1rem;
-    stroke-width: 1.5;
-  }
-
-  .emptyTitle {
-    font-size: 1.125rem;
-    font-weight: 500;
-    color: #111827;
-    margin: 0 0 0.5rem 0;
-  }
-
-  .emptyDesc {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin: 0;
-  }
+  padding: 3rem 0;
+  color: #6b7280;
 }
 
-.todoList {
+.emptyIcon {
+  height: 4rem;
+  width: 4rem;
+  margin: 0 auto 1rem;
+  opacity: 0.3;
+}
+
+.emptyTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem;
+}
+
+.emptyDescription {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.todosList {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -217,88 +271,59 @@
   gap: 1rem;
   padding: 1rem;
   border-radius: 0.5rem;
-  transition: background-color 0.15s;
+  transition: background-color 0.2s ease-in-out;
 
   &:hover {
-    background-color: #f9fafb;
-  }
-
-  .todoCheckbox {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    color: #9ca3af;
-    transition: color 0.2s;
-
-    &:hover {
-      color: #646cff;
-    }
-
-    svg {
-      stroke-width: 2;
-
-      &.checked {
-        color: #10b981;
-      }
-    }
-  }
-
-  .todoContent {
-    flex: 1;
-    min-width: 0;
-
-    p {
-      margin: 0;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #111827;
-
-      &.completed {
-        text-decoration: line-through;
-        color: #9ca3af;
-      }
-    }
-
-    .todoGroup {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-top: 0.25rem;
-    }
+    background-color: rgba(243, 244, 246, 0.5);
   }
 }
 
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-
-  .statItem {
-    text-align: center;
-
-    .statValue {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #111827;
-      margin: 0 0 0.25rem 0;
-    }
-
-    .statLabel {
-      font-size: 0.875rem;
-      color: #6b7280;
-      margin: 0;
-    }
-  }
+.todoCheckbox {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
-.statsTotal {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f3f4f6;
-  text-align: center;
-  color: #6b7280;
+.todoContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.todoText {
   font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+
+  &.completed {
+    text-decoration: line-through;
+    color: #6b7280;
+  }
+}
+
+.todoGroup {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+}
+
+.editInput {
+  font-size: 0.875rem;
+}
+
+// Right Section
+.rightSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.recommendedTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .recommendedList {
@@ -309,167 +334,380 @@
 
 .recommendedCard {
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s ease-in-out;
 
   &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
+}
+
+.recommendedContent {
+  padding: 1.5rem;
+}
+
+.recommendedInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .recommendedHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 1rem;
+}
 
-  .recommendedContent {
-    flex: 1;
-    min-width: 0;
+.recommendedText {
+  flex: 1;
+  min-width: 0;
+}
 
-    .recommendedText {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #111827;
-      margin: 0 0 0.5rem 0;
-    }
+.recommendedTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
 
-    .recommendedGroup {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin: 0;
-    }
-  }
+.recommendedGroup {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0.5rem 0 0;
+}
+
+.frequencyBadge {
+  font-size: 0.75rem;
+  margin-left: 0.75rem;
 }
 
 .addButton {
   width: 100%;
+  background-color: #171717;
+  color: white;
+  border: none;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+// Empty Recommended State
+.emptyRecommended {
+  text-align: center;
+  padding: 2rem 0;
+  color: #6b7280;
+}
+
+.emptyRecommendedIcon {
+  height: 3rem;
+  width: 3rem;
+  margin: 0 auto 1rem;
+  opacity: 0.3;
+}
+
+.emptyRecommendedText {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+// Dialog Styles
+.dialogContent {
+  max-width: 28rem;
 }
 
 .dialogForm {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
 
-  label {
-    display: block;
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.input {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+
+  &:focus {
+    outline: none;
+    border-color: #171717;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+.textarea {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: #171717;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+.select {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background-color: white;
+
+  &:focus {
+    outline: none;
+    border-color: #171717;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #171717;
+}
+
+.checkboxLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.dialogActions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.primaryButton {
+  flex: 1;
+  background-color: #171717;
+  color: white;
+  border: none;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+.secondaryButton {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #111827;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+.todoDialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.todoDialogActions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+// Calendar Dialog
+.calendarDialog {
+  width: auto;
+  padding: 0;
+}
+
+.calendarHeader {
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.calendarContent {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.calendar {
+  margin-bottom: 1rem;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendarDay {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  background: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+
+  &.selected {
+    background-color: #171717;
+    color: white;
+  }
+
+  &.hasTasks {
+    background-color: #171717;
+    color: white;
+    font-weight: 700;
+  }
+}
+
+.calendarActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.todayButton {
+  flex: 1;
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  color: #111827;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+.closeButton {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #111827;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+// Dropdown Menu
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+.logoutItem {
+  color: #dc2626;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fef2f2;
+    color: #dc2626;
+  }
+
+  &:focus {
+    background-color: #fef2f2;
+    color: #dc2626;
+  }
+}
+
+.deleteItem {
+  color: #dc2626;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fef2f2;
+    color: #dc2626;
+  }
+
+  &:focus {
+    background-color: #fef2f2;
+    color: #dc2626;
+  }
+}
+
+// Todo Checkbox Colors
+.todoCheckboxCompleted {
+  color: #34c759;
+}
+
+.todoCheckboxPending {
+  color: #6b7280;
+
+  &:hover {
+    color: #171717;
+  }
+}
+
+// Help Modal Styles
+.helpModal {
+  max-width: 32rem;
+}
+
+.helpContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.helpSection {
+  .helpSectionTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.75rem 0;
+  }
+}
+
+.helpList {
+  margin: 0;
+  padding-left: 1.25rem;
+
+  li {
     font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
+    color: #6b7280;
     margin-bottom: 0.5rem;
-  }
+    line-height: 1.5;
 
-  .checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-
-    input[type="checkbox"] {
-      width: 1rem;
-      height: 1rem;
-      cursor: pointer;
-    }
-
-    label {
-      margin: 0;
-      cursor: pointer;
-    }
-  }
-
-  .dialogActions {
-    display: flex;
-    gap: 0.75rem;
-    padding-top: 0.5rem;
-
-    button {
-      flex: 1;
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .main {
-    background-color: #111827;
-  }
-
-  .header {
-    background-color: #1f2937;
-    border-bottom-color: #374151;
-
-    .headerLeft h1 {
-      color: #f9fafb;
-    }
-  }
-
-  .sectionHeader h2 {
-    color: #f9fafb;
-  }
-
-  .groupCard {
-    .groupHeader .groupInfo h3 {
-      color: #f9fafb;
-    }
-
-    .groupFooter .groupMembers {
-      color: #9ca3af;
-    }
-  }
-
-  .select {
-    background-color: #1f2937;
-    border-color: #374151;
-    color: #f9fafb;
-  }
-
-  .emptyState {
-    .emptyTitle {
-      color: #f9fafb;
-    }
-
-    .emptyDesc {
-      color: #9ca3af;
-    }
-  }
-
-  .todoItem {
-    &:hover {
-      background-color: #1f2937;
-    }
-
-    .todoContent p {
-      color: #f9fafb;
-
-      &.completed {
-        color: #6b7280;
-      }
-    }
-  }
-
-  .statsGrid .statItem {
-    .statValue {
-      color: #f9fafb;
-    }
-
-    .statLabel {
-      color: #9ca3af;
-    }
-  }
-
-  .statsTotal {
-    border-top-color: #374151;
-    color: #9ca3af;
-  }
-
-  .recommendedHeader .recommendedContent {
-    .recommendedText {
-      color: #f9fafb;
-    }
-
-    .recommendedGroup {
-      color: #9ca3af;
-    }
-  }
-
-  .dialogForm label {
-    color: #e5e7eb;
-  }
+.helpFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
 }

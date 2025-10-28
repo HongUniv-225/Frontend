@@ -15,6 +15,7 @@ import {
 } from "../../components/common/avatar/Avatar";
 import Input from "../../components/common/input/Input";
 import Textarea from "../../components/common/textarea/Textarea";
+import questionmarkIcon from "../../assets/questionmark.svg";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,7 @@ const mockGroupData: Record<number, any> = {
     id: 1,
     name: "프로젝트 팀",
     description: "새로운 웹 애플리케이션 개발 프로젝트",
-    color: "#3b82f6",
+    color: "#171717",
     createdAt: "2024-01-15",
     members: [
       { id: 1, name: "김철수", email: "kim@example.com", role: "팀장" },
@@ -146,6 +147,7 @@ const TeamDetail = () => {
   });
   const [showCompleted, setShowCompleted] = useState(true);
   const [showFailed, setShowFailed] = useState(true);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<
     Record<TodoStatus, boolean>
   >({
@@ -372,6 +374,16 @@ const TeamDetail = () => {
                   style={{ backgroundColor: group.color }}
                 />
                 <h1>{group.name}</h1>
+                <button
+                  className={styles.helpButton}
+                  onClick={() => setIsHelpModalOpen(true)}
+                >
+                  <img
+                    src={questionmarkIcon}
+                    alt="도움말"
+                    className={styles.helpIcon}
+                  />
+                </button>
               </div>
             </div>
             <div className={styles.headerRight}>
@@ -850,6 +862,46 @@ const TeamDetail = () => {
           </div>
         </div>
       </main>
+
+      {/* 도움말 모달 */}
+      <Dialog open={isHelpModalOpen} onOpenChange={setIsHelpModalOpen}>
+        <DialogContent className={styles.helpModal}>
+          <DialogHeader>
+            <DialogTitle>팀 상세 페이지 사용법</DialogTitle>
+          </DialogHeader>
+          <div className={styles.helpContent}>
+            <div className={styles.helpSection}>
+              <h3 className={styles.helpSectionTitle}>📋 할일 관리</h3>
+              <ul className={styles.helpList}>
+                <li>"할 일 추가" 버튼으로 새로운 할일을 생성할 수 있습니다</li>
+                <li>할일을 클릭하여 상세 정보를 확인할 수 있습니다</li>
+                <li>할일 상태를 변경하여 진행 상황을 관리할 수 있습니다</li>
+              </ul>
+            </div>
+
+            <div className={styles.helpSection}>
+              <h3 className={styles.helpSectionTitle}>👥 팀원 관리</h3>
+              <ul className={styles.helpList}>
+                <li>팀원 목록에서 각 팀원의 정보를 확인할 수 있습니다</li>
+                <li>팀원의 프로필 이미지와 역할을 볼 수 있습니다</li>
+                <li>팀원별 할일 현황을 확인할 수 있습니다</li>
+              </ul>
+            </div>
+
+            <div className={styles.helpSection}>
+              <h3 className={styles.helpSectionTitle}>📊 통계 정보</h3>
+              <ul className={styles.helpList}>
+                <li>완료된 할일과 미완료 할일 수를 확인할 수 있습니다</li>
+                <li>전체 할일 수와 진행률을 볼 수 있습니다</li>
+                <li>팀의 전체적인 진행 상황을 파악할 수 있습니다</li>
+              </ul>
+            </div>
+          </div>
+          <div className={styles.helpFooter}>
+            <Button onClick={() => setIsHelpModalOpen(false)}>확인</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

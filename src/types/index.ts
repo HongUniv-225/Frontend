@@ -36,14 +36,9 @@ export interface Member {
   avatar?: string;
 }
 
-export interface GroupDetail {
-  id: number;
-  name: string;
-  description: string;
-  color: string;
+export interface GroupDetail extends Omit<Group, "members" | "tasks"> {
   members: Member[];
   tasks: Task[];
-  createdAt?: string;
 }
 
 // User types
