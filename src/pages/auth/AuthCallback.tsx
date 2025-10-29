@@ -25,7 +25,9 @@ export default function AuthCallback() {
               client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
               code: code,
               grant_type: "authorization_code",
-              redirect_uri: `${window.location.origin}/auth/callback`,
+              redirect_uri:
+                import.meta.env.VITE_REDIRECT_URI ||
+                `${window.location.origin}/auth/callback`,
             },
             {
               headers: {
