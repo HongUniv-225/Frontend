@@ -83,7 +83,7 @@ export default function LoginPage() {
 
       // Google OAuth 인증 페이지로 리다이렉트
       const redirectUri = encodeURIComponent(
-        "http://localhost:5173/auth/callback"
+        `${window.location.origin}/auth/callback`
       );
       const scope = encodeURIComponent("openid email profile");
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&access_type=offline`;
