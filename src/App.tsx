@@ -1,7 +1,6 @@
 import { RouterProvider } from "react-router-dom";
 import { routes } from "./routes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function App() {
@@ -13,7 +12,6 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <QueryClientProvider client={queryClient}>
-        <ReactQueryDevtools initialIsOpen={false} />
         <RouterProvider router={routes} />
       </QueryClientProvider>
     </GoogleOAuthProvider>

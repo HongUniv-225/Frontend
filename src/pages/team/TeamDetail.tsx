@@ -492,16 +492,16 @@ const TeamDetail = () => {
             {/* Right Section - Tasks */}
             <div className={styles.rightSection}>
               <div className={styles.sectionHeader}>
-                <h2>그룹 할일</h2>
+                <h2>그룹 할 일</h2>
                 <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
                   <DialogTrigger asChild>
                     <Button>
-                      <span>+</span> 할일 추가
+                      <span>+</span> 할 일 추가
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>새 할일 추가</DialogTitle>
+                      <DialogTitle>새 할 일 추가</DialogTitle>
                     </DialogHeader>
                     <div className={styles.dialogForm}>
                       <div>
@@ -511,7 +511,7 @@ const TeamDetail = () => {
                           onChange={(e) =>
                             setNewTask({ ...newTask, title: e.target.value })
                           }
-                          placeholder="할일 제목을 입력하세요"
+                          placeholder="할 일 제목을 입력하세요"
                         />
                       </div>
                       <div>
@@ -524,7 +524,7 @@ const TeamDetail = () => {
                               description: e.target.value,
                             })
                           }
-                          placeholder="할일 설명을 입력하세요"
+                          placeholder="할 일 설명을 입력하세요"
                         />
                       </div>
                       <div>
@@ -781,9 +781,9 @@ const TeamDetail = () => {
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
                       </svg>
-                      <p>아직 할일이 없습니다</p>
+                      <p>아직 할 일이 없습니다</p>
                       <p className={styles.emptyDesc}>
-                        새로운 할일을 추가해보세요
+                        새로운 할 일을 추가해보세요
                       </p>
                     </div>
                   </CardContent>
@@ -871,11 +871,11 @@ const TeamDetail = () => {
           </DialogHeader>
           <div className={styles.helpContent}>
             <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>📋 할일 관리</h3>
+              <h3 className={styles.helpSectionTitle}>📋 할 일 관리</h3>
               <ul className={styles.helpList}>
-                <li>"할 일 추가" 버튼으로 새로운 할일을 생성할 수 있습니다</li>
-                <li>할일을 클릭하여 상세 정보를 확인할 수 있습니다</li>
-                <li>할일 상태를 변경하여 진행 상황을 관리할 수 있습니다</li>
+                <li>"할 일 추가" 버튼으로 새로운 할 일을 생성할 수 있습니다</li>
+                <li>할 일을 클릭하여 상세 정보를 확인할 수 있습니다</li>
+                <li>할 일 상태를 변경하여 진행 상황을 관리할 수 있습니다</li>
               </ul>
             </div>
 
@@ -884,15 +884,15 @@ const TeamDetail = () => {
               <ul className={styles.helpList}>
                 <li>팀원 목록에서 각 팀원의 정보를 확인할 수 있습니다</li>
                 <li>팀원의 프로필 이미지와 역할을 볼 수 있습니다</li>
-                <li>팀원별 할일 현황을 확인할 수 있습니다</li>
+                <li>팀원별 할 일 현황을 확인할 수 있습니다</li>
               </ul>
             </div>
 
             <div className={styles.helpSection}>
               <h3 className={styles.helpSectionTitle}>📊 통계 정보</h3>
               <ul className={styles.helpList}>
-                <li>완료된 할일과 미완료 할일 수를 확인할 수 있습니다</li>
-                <li>전체 할일 수와 진행률을 볼 수 있습니다</li>
+                <li>완료된 할 일과 미완료 할 일 수를 확인할 수 있습니다</li>
+                <li>전체 할 일 수와 진행률을 볼 수 있습니다</li>
                 <li>팀의 전체적인 진행 상황을 파악할 수 있습니다</li>
               </ul>
             </div>

@@ -138,6 +138,8 @@ export default function HomePage() {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isRecommendedHelpModalOpen, setIsRecommendedHelpModalOpen] =
+    useState(false);
   const [newGroup, setNewGroup] = useState({
     name: "",
     description: "",
@@ -157,11 +159,8 @@ export default function HomePage() {
   // 특정 날짜의 할일을 가져오는 함수
   const fetchTodosByDate = useCallback(async (dateKey: string) => {
     try {
-      console.log("📋 날짜별 할일 가져오기:", dateKey);
-
       // 해당 날짜의 할일 목록 가져오기
       const userTodos = await getUserTodosByDate(dateKey);
-      console.log("📋 날짜별 할일 목록:", userTodos);
 
       // Todo 형식으로 변환
       const convertedTodos: Todo[] = userTodos.map(
@@ -188,10 +187,8 @@ export default function HomePage() {
         ...prev,
         [dateKey]: convertedTodos,
       }));
-
-      console.log("✅ 날짜별 할일 로드 완료:", convertedTodos);
-    } catch (error) {
-      console.error("❌ 날짜별 할일 로드 실패:", error);
+    } catch {
+      // 에러 처리 (로그 출력 없음)
     }
   }, []);
 
@@ -210,9 +207,7 @@ export default function HomePage() {
       try {
         const data = await getRecommendedTodos();
         setRecommendedTodos(data);
-        console.log("✅ 추천 할일 로드 완료:", data);
-      } catch (error) {
-        console.error("❌ 추천 할일 로드 실패:", error);
+      } catch {
         // API 실패 시 빈 배열로 설정
         setRecommendedTodos([]);
       }
@@ -225,9 +220,7 @@ export default function HomePage() {
         // id 순으로 정렬
         const sortedGroups = data.sort((a: Group, b: Group) => a.id - b.id);
         setGroups(sortedGroups);
-        console.log("✅ 내 그룹 로드 완료:", sortedGroups);
-      } catch (error) {
-        console.error("❌ 내 그룹 로드 실패:", error);
+      } catch {
         // API 실패 시 빈 배열로 설정
         setGroups([]);
       }
@@ -266,14 +259,12 @@ export default function HomePage() {
         (todo) => todo.id === id
       );
       if (!currentTodo) {
-        console.error("❌ 할일을 찾을 수 없습니다:", id);
         return;
       }
 
       // 반대 상태로 API 호출
       const newCompletedState = !currentTodo.completed;
-      const response = await completeUserTodo(id, newCompletedState);
-      console.log("✅ 할일 완료 상태 변경:", response);
+      await completeUserTodo(id, newCompletedState);
 
       // 로컬 상태 업데이트
       setTodosByDate((prev) => ({
@@ -284,73 +275,26 @@ export default function HomePage() {
       }));
 
       // 완료 상태 변경 후 추천할일 목록도 새로고침
-      console.log("🔄 완료 상태 변경 후 추천할일 목록 새로고침 중...");
       const updatedRecommendedTodos = await getRecommendedTodos();
       setRecommendedTodos(updatedRecommendedTodos);
-      console.log("📋 새로고침된 추천할일 목록:", updatedRecommendedTodos);
-    } catch (error) {
-      console.error("❌ 할일 완료 상태 변경 실패:", error);
-      alert("할일 완료 상태 변경에 실패했습니다. 다시 시도해주세요.");
+    } catch {
+      alert("할 일 완료 상태 변경에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
   const addTodoFromRecommended = async (recommendedTodo: RecommendedTodo) => {
     try {
-      console.log("🔍 추천할일 오늘 추가 시작:", {
-        추천할일ID: recommendedTodo.id,
-        내용: recommendedTodo.content,
-        원래그룹ID: recommendedTodo.groupId,
-        원래타입: recommendedTodo.todoType,
-        원래할당자: recommendedTodo.assigned,
-        원래상태: recommendedTodo.todoStatus,
-        원래시작일: recommendedTodo.startDate,
-        원래마감일: recommendedTodo.dueDate,
-      });
-
       // 오늘 날짜로 설정
       const today = getDateKey(new Date());
-
-      console.log("📤 추천할일 오늘 추가 요청:", {
-        todoId: recommendedTodo.id,
-        date: today,
-        원래할일: recommendedTodo.content,
-      });
-
-      // 올바른 API 호출: POST /api/v1/todos/{todoId} with {"date": "2025-10-27"}
-      const response = await addRecommendedTodoToToday(
-        recommendedTodo.id,
-        today
-      );
-      console.log("📥 추천할일 오늘 추가 응답:", response);
+      // 올바른 API 호출: POST /api/v1/todos/{todoId} with {"date": "YYYY-MM-DD"}
+      await addRecommendedTodoToToday(recommendedTodo.id, today);
 
       // 할일 추가 후 선택된 날짜의 할일 다시 가져오기
       await fetchTodosByDate(selectedDateKey);
-
-      console.log("🔄 추천할일 목록 새로고침 중...");
       const updatedRecommendedTodos = await getRecommendedTodos();
-      console.log("📋 새로고침된 추천할일 목록:", updatedRecommendedTodos);
-
-      const stillExists = updatedRecommendedTodos.find(
-        (todo: RecommendedTodo) => todo.id === recommendedTodo.id
-      );
-      if (stillExists) {
-        console.log(
-          "⚠️ 백엔드에서 추천할일이 제거되지 않았습니다:",
-          stillExists
-        );
-        console.log(
-          "🔍 백엔드 로직을 확인해주세요. 추천할일 추가 후 해당 할일이 추천 목록에서 제거되어야 합니다."
-        );
-      } else {
-        console.log("✅ 백엔드에서 추천할일이 성공적으로 제거되었습니다!");
-      }
 
       setRecommendedTodos(updatedRecommendedTodos);
-
-      console.log("✅ 추천할일 오늘 추가 완료:", response);
     } catch (error) {
-      console.error("❌ 추천할일 오늘 추가 실패:", error);
-
       // 권한 오류인 경우 더 자세한 안내
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
@@ -358,13 +302,13 @@ export default function HomePage() {
         };
         if (axiosError.response?.status === 403) {
           alert(
-            "권한이 없습니다. 추천할일을 오늘로 추가할 수 없습니다.\n\n해결 방법:\n1. 해당 할일에 대한 권한 확인\n2. 다시 시도해주세요"
+            "권한이 없습니다. 추천할 일을 오늘로 추가할 수 없습니다.\n\n해결 방법:\n1. 해당 할일에 대한 권한 확인\n2. 다시 시도해주세요"
           );
         } else {
-          alert("추천할일 오늘 추가에 실패했습니다. 다시 시도해주세요.");
+          alert("추천할 일 오늘 추가에 실패했습니다. 다시 시도해주세요.");
         }
       } else {
-        alert("추천할일 오늘 추가에 실패했습니다. 다시 시도해주세요.");
+        alert("추천할 일 오늘 추가에 실패했습니다. 다시 시도해주세요.");
       }
     }
   };
@@ -373,11 +317,8 @@ export default function HomePage() {
     if (newTodo.text.trim()) {
       try {
         // Mine 그룹 찾기 (기본 그룹)
-        console.log("🔍 전체 그룹 목록:", groups);
         const mineGroup = groups.find((g) => g.groupName === "Mine");
-        console.log("🔍 Mine 그룹 찾기 결과:", mineGroup);
         const groupId = mineGroup?.id || 7; // Mine 그룹이 없으면 기본값 7 사용
-        console.log("📝 사용된 Group ID:", groupId);
 
         // API로 할일 추가
         const todoData = {
@@ -388,45 +329,30 @@ export default function HomePage() {
           assigned: 0,
         };
 
-        console.log("📤 API 호출 데이터:", todoData);
-        const response = await addTodoToGroup(groupId, todoData);
-        console.log("📥 API 응답:", response);
+        await addTodoToGroup(groupId, todoData);
 
         // 할일 추가 후 선택된 날짜의 할일 다시 가져오기
         await fetchTodosByDate(selectedDateKey);
 
         setNewTodo({ text: "", group: "개인" });
         setIsAddingTodo(false);
-
-        console.log("✅ 할일 추가 완료:", response);
-      } catch (error) {
-        console.error("❌ 할일 추가 실패:", error);
+      } catch {
         // 에러가 발생해도 사용자에게 알림 (선택사항)
-        alert("할일 추가에 실패했습니다. 다시 시도해주세요.");
+        alert("할 일 추가에 실패했습니다. 다시 시도해주세요.");
       }
     }
   };
 
   const deleteTodo = async (userTodoId: number) => {
     try {
-      console.log("🗑️ 삭제 시도:", { userTodoId });
-
       // 삭제할 할일 정보 찾기
       const todoToDelete = todosByDate[selectedDateKey]?.find(
         (todo) => todo.id === userTodoId
       );
 
       if (!todoToDelete) {
-        console.error("❌ 삭제할 할일을 찾을 수 없습니다:", userTodoId);
         return;
       }
-
-      console.log("🔍 삭제할 할일 정보:", {
-        userTodoId,
-        group: todoToDelete.group,
-        groupId: todoToDelete.groupId,
-        todoId: todoToDelete.todoId,
-      });
 
       // 그룹이 "Mine"이고 groupId와 todoId가 있으면 그룹 할일 삭제 API 사용
       if (
@@ -434,14 +360,9 @@ export default function HomePage() {
         todoToDelete.groupId &&
         todoToDelete.todoId
       ) {
-        console.log("🏠 Mine 그룹 할일 삭제:", {
-          groupId: todoToDelete.groupId,
-          todoId: todoToDelete.todoId,
-        });
         await deleteGroupTodoById(todoToDelete.todoId, todoToDelete.groupId);
       } else {
         // 일반 사용자 할일 삭제 API 사용
-        console.log("👤 일반 사용자 할일 삭제:", userTodoId);
         await deleteUserTodo(userTodoId);
       }
 
@@ -449,15 +370,9 @@ export default function HomePage() {
       await fetchTodosByDate(selectedDateKey);
 
       // 추천할일 목록도 새로고침 (삭제된 할일이 추천할일로 다시 추가될 수 있음)
-      console.log("🔄 추천할일 목록 새로고침 중...");
       const updatedRecommendedTodos = await getRecommendedTodos();
       setRecommendedTodos(updatedRecommendedTodos);
-      console.log("📋 새로고침된 추천할일 목록:", updatedRecommendedTodos);
-
-      console.log("✅ 할일 삭제 완료:", userTodoId);
-    } catch (error) {
-      console.error("❌ 할일 삭제 실패:", error);
-
+    } catch {
       // 서버 삭제 실패 시 사용자에게 선택권 제공
       const shouldDeleteLocally = confirm(
         "서버에서 할일 삭제에 실패했습니다. 할일이 이미 삭제되었거나 권한이 없을 수 있습니다.\n\n" +
@@ -474,12 +389,8 @@ export default function HomePage() {
         }));
 
         // 로컬 삭제 후에도 추천할일 목록 새로고침
-        console.log("🔄 로컬 삭제 후 추천할일 목록 새로고침 중...");
         const updatedRecommendedTodos = await getRecommendedTodos();
         setRecommendedTodos(updatedRecommendedTodos);
-        console.log("📋 새로고침된 추천할일 목록:", updatedRecommendedTodos);
-
-        console.log("✅ 로컬에서 할일 삭제 완료:", userTodoId);
       }
     }
   };
@@ -542,10 +453,7 @@ export default function HomePage() {
           | "WORK"
           | "OTHER",
       };
-
-      console.log("📤 그룹 생성 요청:", groupData);
-      const response = await createGroup(groupData);
-      console.log("✅ 그룹 생성 완료:", response);
+      await createGroup(groupData);
 
       // 성공 시 폼 초기화 및 다이얼로그 닫기
       setNewGroup({
@@ -562,21 +470,18 @@ export default function HomePage() {
           const data = await getMyGroups();
           const sortedGroups = data.sort((a: Group, b: Group) => a.id - b.id);
           setGroups(sortedGroups);
-          console.log("✅ 그룹 목록 새로고침 완료:", sortedGroups);
-        } catch (error) {
-          console.error("❌ 그룹 목록 새로고침 실패:", error);
+        } catch {
+          // 그룹 목록 새로고침 실패 (무시)
         }
       };
 
       await fetchMyGroups();
-    } catch (error) {
-      console.error("❌ 그룹 생성 실패:", error);
+    } catch {
       alert("그룹 생성에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
   const handleLogout = () => {
-    console.log("로그아웃");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     navigate("/login");
@@ -592,7 +497,7 @@ export default function HomePage() {
               <div className={styles.logoIcon}>
                 <Users className="h-5 w-5" />
               </div>
-              <h1 className={styles.title}>그룹 투두</h1>
+              <h1 className={styles.title}>GroupTodo</h1>
               <button
                 className={styles.helpButton}
                 onClick={() => setIsHelpModalOpen(true)}
@@ -876,17 +781,17 @@ export default function HomePage() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>새 할일 추가</DialogTitle>
+                    <DialogTitle>새 할 일 추가</DialogTitle>
                   </DialogHeader>
                   <div className={styles.todoDialogForm}>
                     <div>
-                      <label className={styles.label}>할일</label>
+                      <label className={styles.label}>할 일</label>
                       <Input
                         value={newTodo.text}
                         onChange={(e) =>
                           setNewTodo({ ...newTodo, text: e.target.value })
                         }
-                        placeholder="할일을 입력하세요"
+                        placeholder="할 일을 입력하세요"
                         className={styles.input}
                       />
                     </div>
@@ -916,11 +821,10 @@ export default function HomePage() {
                   <div className={styles.emptyState}>
                     <CalendarIcon className={styles.emptyIcon} />
                     <p className={styles.emptyTitle}>
-                      선택한 날짜에 할일이 없습니다
+                      선택한 날짜에 할 일이 없습니다
                     </p>
                     <p className={styles.emptyDescription}>
-                      오른쪽에서 추천 할일을 추가하거나 새로운 할일을
-                      만들어보세요
+                      추천 할 일을 추가하거나 새로운 할 일을 만들어보세요
                     </p>
                   </div>
                 ) : (
@@ -1007,7 +911,17 @@ export default function HomePage() {
             <div className={styles.sectionHeader}>
               <div className={styles.recommendedTitle}>
                 <Star className="h-6 w-6 text-yellow-500" />
-                <h2 className={styles.sectionTitle}>추천 할일</h2>
+                <h2 className={styles.sectionTitle}>추천 할 일</h2>
+                <button
+                  className={styles.helpButton}
+                  onClick={() => setIsRecommendedHelpModalOpen(true)}
+                >
+                  <img
+                    src={questionmarkIcon}
+                    alt="도움말"
+                    className={styles.helpIcon}
+                  />
+                </button>
               </div>
             </div>
 
@@ -1016,7 +930,7 @@ export default function HomePage() {
                 <div className={styles.emptyRecommended}>
                   <Star className={styles.emptyRecommendedIcon} />
                   <p className={styles.emptyRecommendedText}>
-                    추천 할일이 없습니다
+                    추천 할 일이 없습니다
                   </p>
                 </div>
               ) : (
@@ -1064,38 +978,168 @@ export default function HomePage() {
       <Dialog open={isHelpModalOpen} onOpenChange={setIsHelpModalOpen}>
         <DialogContent className={styles.helpModal}>
           <DialogHeader>
-            <DialogTitle>그룹 투두 사용법</DialogTitle>
+            <DialogTitle>그룹 투두 사용 가이드</DialogTitle>
           </DialogHeader>
           <div className={styles.helpContent}>
             <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>📋 할일 관리</h3>
+              <p style={{ marginBottom: "1rem", lineHeight: "1.6" }}>
+                그룹 투두는 <strong>그룹의 할 일과 개인의 할 일</strong>을 함께
+                관리할 수 있는
+                <br />
+                <strong>협업형 투두 서비스</strong>입니다.
+              </p>
+              <p style={{ marginBottom: "1.5rem", lineHeight: "1.6" }}>
+                프로젝트, 스터디, 과제 등 다양한 상황에서 함께 일정을
+                관리해보세요.
+              </p>
+            </div>
+
+            <div className={styles.helpSection}>
+              <h3 className={styles.helpSectionTitle}>✅ 할 일 추가</h3>
               <ul className={styles.helpList}>
-                <li>좌측에서 그룹을 선택하여 할일을 추가할 수 있습니다</li>
-                <li>중앙에서 오늘 날짜의 할일을 확인하고 체크할 수 있습니다</li>
-                <li>우측에서 추천 할일을 오늘 날짜에 추가할 수 있습니다</li>
+                <li>
+                  그룹 페이지 또는 메인 화면에서 <strong>"할 일 추가"</strong>{" "}
+                  버튼을 눌러 할 일을 만들 수 있습니다.
+                </li>
+                <li>
+                  생성된 투두는 <strong>그룹 할 일</strong> 또는{" "}
+                  <strong>개인 할 일(Mine)</strong>로 분류됩니다.
+                </li>
               </ul>
             </div>
 
             <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>👥 그룹 관리</h3>
-              <ul className={styles.helpList}>
-                <li>"그룹 생성" 버튼으로 새로운 그룹을 만들 수 있습니다</li>
-                <li>"그룹 탐색"에서 공개 그룹을 찾아 참여할 수 있습니다</li>
-                <li>그룹별로 색상이 다르게 표시됩니다</li>
-              </ul>
+              <h3 className={styles.helpSectionTitle}># 그룹 할 일 유형</h3>
+              <div style={{ marginBottom: "1rem" }}>
+                <h4
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    marginBottom: "0.5rem",
+                    color: "#111827",
+                  }}
+                >
+                  <strong>공용 할 일</strong>
+                </h4>
+                <ul className={styles.helpList}>
+                  <li>
+                    담당자를 지정해 <strong>특정 멤버가 수행하는 할 일</strong>
+                  </li>
+                  <li>예: 프로젝트, 업무</li>
+                </ul>
+              </div>
+              <div style={{ marginBottom: "1rem" }}>
+                <h4
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    marginBottom: "0.5rem",
+                    color: "#111827",
+                  }}
+                >
+                  <strong>공통 할 일</strong>
+                </h4>
+                <ul className={styles.helpList}>
+                  <li>
+                    <strong>모든 그룹원이 함께 수행하는 할 일</strong>
+                  </li>
+                  <li>예: 스터디, 과제</li>
+                </ul>
+              </div>
+              <div
+                style={{
+                  background: "#f8fafc",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  borderLeft: "3px solid #3b82f6",
+                  marginBottom: "1rem",
+                }}
+              >
+                <p
+                  style={{ margin: 0, fontSize: "0.875rem", color: "#374151" }}
+                >
+                  💡 상황에 따라 공용/공통 할 일을 구분해 사용하면
+                  <br />
+                  그룹 내 역할 분담이 훨씬 효율적이에요.
+                </p>
+              </div>
             </div>
 
             <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>📅 날짜 관리</h3>
+              <h3 className={styles.helpSectionTitle}>
+                # 개인 할 일 (Mine 그룹)
+              </h3>
               <ul className={styles.helpList}>
-                <li>날짜 버튼을 클릭하여 다른 날짜를 선택할 수 있습니다</li>
-                <li>화살표 버튼으로 이전/다음 날로 이동할 수 있습니다</li>
-                <li>"오늘" 버튼으로 오늘 날짜로 빠르게 이동할 수 있습니다</li>
+                <li>
+                  메인 페이지에서 추가한 투두는 <strong>Mine 그룹</strong>에
+                  저장됩니다.
+                </li>
+                <li>개인적인 일정이나 할 일을 관리할 때 활용하세요.</li>
               </ul>
             </div>
           </div>
           <div className={styles.helpFooter}>
             <Button onClick={() => setIsHelpModalOpen(false)}>확인</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 추천 투두 설명 모달 */}
+      <Dialog
+        open={isRecommendedHelpModalOpen}
+        onOpenChange={setIsRecommendedHelpModalOpen}
+      >
+        <DialogContent className={styles.helpModal}>
+          <DialogHeader>
+            <DialogTitle>💫 추천 투두</DialogTitle>
+          </DialogHeader>
+          <div className={styles.helpContent}>
+            <div className={styles.helpSection}>
+              <p style={{ marginBottom: "0.75rem", lineHeight: "1.6" }}>
+                매일 나에게 필요한 할 일을 자동으로 추천해줍니다.
+              </p>
+              <ol
+                style={{
+                  margin: 0,
+                  paddingLeft: "1.25rem",
+                  fontSize: "0.875rem",
+                  color: "#6b7280",
+                  lineHeight: "1.5",
+                }}
+              >
+                <li>
+                  <strong>내가 담당자</strong>인 진행 중인 공용 할 일
+                </li>
+                <li>
+                  <strong>공통으로 진행</strong>되고 있는 할 일
+                </li>
+                <li>
+                  <strong>Favorite Todo</strong>로 등록한 자주 쓰는 할 일
+                </li>
+              </ol>
+              <div
+                style={{
+                  background: "#f8fafc",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  borderLeft: "3px solid #3b82f6",
+                  marginTop: "1rem",
+                }}
+              >
+                <p
+                  style={{ margin: 0, fontSize: "0.875rem", color: "#374151" }}
+                >
+                  💡 자주 반복되는 할 일은 Favorite에 추가해두면
+                  <br />
+                  매일 자동으로 추천받을 수 있습니다.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className={styles.helpFooter}>
+            <Button onClick={() => setIsRecommendedHelpModalOpen(false)}>
+              확인
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

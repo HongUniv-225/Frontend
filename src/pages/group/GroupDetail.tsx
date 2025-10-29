@@ -117,6 +117,8 @@ interface Group {
   tasks?: Task[];
 }
 
+// Mock data는 더 이상 사용하지 않음 (실제 API 사용)
+
 // 그룹 ID를 기반으로 일관된 색상을 생성하는 함수
 const getGroupColor = (groupId: number): string => {
   const colors = [
@@ -143,23 +145,8 @@ const formatDate = (dateString: string | null): string => {
   try {
     const date = new Date(dateString);
     return date.toISOString().split("T")[0];
-  } catch (error) {
-    console.error("날짜 포맷팅 오류:", error);
+  } catch {
     return "정보 없음";
-  }
-};
-
-// 역할을 한국어로 매핑하는 함수
-const getRoleLabel = (role: string): string => {
-  switch (role) {
-    case "CREATOR":
-      return "그룹 생성자";
-    case "ADMIN":
-      return "관리자";
-    case "MEMBER":
-      return "일반 멤버";
-    default:
-      return role;
   }
 };
 
@@ -177,23 +164,19 @@ const getRolePriority = (role: string): number => {
   }
 };
 
-// 카테고리를 한국어로 매핑하는 함수
-const getCategoryLabel = (category: string): string => {
-  switch (category) {
-    case "STUDY":
-      return "스터디";
-    case "PROJECT":
-      return "프로젝트";
-    case "WORK":
-      return "업무";
-    case "OTHER":
-      return "기타";
+// 역할을 한국어로 매핑하는 함수
+const getRoleLabel = (role: string): string => {
+  switch (role) {
+    case "CREATOR":
+      return "그룹 생성자";
+    case "ADMIN":
+      return "관리자";
+    case "MEMBER":
+      return "일반 멤버";
     default:
-      return category;
+      return role;
   }
 };
-
-// Mock data는 더 이상 사용하지 않음 (실제 API 사용)
 
 // API 상태를 UI 상태로 변환하는 헬퍼 함수
 const convertApiStatusToUiStatus = (
@@ -224,6 +207,22 @@ const convertApiTodoTypeToUiType = (todoType: string): TaskType => {
       return "개인";
     default:
       return "공통";
+  }
+};
+
+// 카테고리를 한국어로 매핑하는 함수
+const getCategoryLabel = (category: string): string => {
+  switch (category) {
+    case "STUDY":
+      return "스터디";
+    case "PROJECT":
+      return "프로젝트";
+    case "WORK":
+      return "업무";
+    case "OTHER":
+      return "기타";
+    default:
+      return category;
   }
 };
 
@@ -302,20 +301,11 @@ export default function GroupDetailPage() {
         // 저장된 사용자 정보 먼저 로드
         const storedUser = getStoredUser();
         setUser(storedUser as typeof user);
-        console.log("🔍 저장된 사용자 정보:", storedUser);
 
         // 서버에서 최신 사용자 정보 가져오기
         const userProfile = await getUserProfile();
-        console.log("🔍 서버에서 가져온 사용자 정보 상세:", {
-          userProfile,
-          hasId: !!userProfile?.id,
-          hasUserId: !!userProfile?.userId,
-          keys: userProfile ? Object.keys(userProfile) : [],
-          fullObject: userProfile,
-        });
         setUser(userProfile as typeof user);
-      } catch (error) {
-        console.error("❌ 사용자 정보 로드 실패:", error);
+      } catch {
         // 실패 시 저장된 정보라도 사용
         const storedUser = getStoredUser();
         setUser(storedUser as typeof user);
@@ -329,9 +319,7 @@ export default function GroupDetailPage() {
       try {
         const groupData = await getGroupById(groupId);
         setGroup(groupData);
-        console.log("✅ 그룹 정보 로드 완료:", groupData);
-      } catch (error) {
-        console.error("❌ 그룹 정보 로드 실패:", error);
+      } catch {
         setGroup(null);
       }
     };
@@ -341,19 +329,7 @@ export default function GroupDetailPage() {
       try {
         const membersData = await getGroupMembers(groupId);
         setMembers(membersData);
-        console.log("✅ 그룹 멤버 로드 완료:", membersData);
-        console.log("🔍 멤버 데이터 상세:", {
-          count: membersData.length,
-          members: membersData.map((m: Member) => ({
-            id: m.id,
-            userId: m.userId,
-            nickname: m.nickname,
-            role: m.role,
-            groupId: m.groupId,
-          })),
-        });
-      } catch (error) {
-        console.error("❌ 그룹 멤버 로드 실패:", error);
+      } catch {
         setMembers([]);
       }
     };
@@ -370,7 +346,6 @@ export default function GroupDetailPage() {
       const fetchGroupTodos = async () => {
         try {
           const todosData = await getGroupTodos(groupId);
-          console.log("✅ 그룹 할일 로드 완료:", todosData);
 
           // API 응답을 Task 형태로 변환
           const convertedTasks: Task[] = todosData.map(
@@ -405,8 +380,7 @@ export default function GroupDetailPage() {
           );
 
           setTasks(convertedTasks);
-        } catch (error) {
-          console.error("❌ 그룹 할일 로드 실패:", error);
+        } catch {
           setTasks([]);
         }
       };
@@ -416,7 +390,6 @@ export default function GroupDetailPage() {
   }, [groupId, members]);
 
   const handleLogout = () => {
-    console.log("로그아웃");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     navigate("/login");
@@ -443,8 +416,7 @@ export default function GroupDetailPage() {
       await deleteGroup(group.id);
       alert("그룹이 성공적으로 삭제되었습니다.");
       navigate("/main");
-    } catch (error) {
-      console.error("❌ 그룹 삭제 실패:", error);
+    } catch {
       alert("그룹 삭제에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsDeletingGroup(false);
@@ -463,8 +435,7 @@ export default function GroupDetailPage() {
       await leaveGroup(group.id);
       alert("그룹에서 성공적으로 탈퇴했습니다.");
       navigate("/main");
-    } catch (error) {
-      console.error("❌ 그룹 탈퇴 실패:", error);
+    } catch {
       alert("그룹 탈퇴에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsLeavingGroup(false);
@@ -506,9 +477,6 @@ export default function GroupDetailPage() {
       setIsEditGroupOpen(false);
       alert("그룹 정보가 성공적으로 수정되었습니다.");
     } catch (error: unknown) {
-      console.error("❌ 그룹 수정 실패:", error);
-
-      // 더 자세한 에러 메시지
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
           response?: { status: number; data?: { message?: string } };
@@ -561,12 +529,6 @@ export default function GroupDetailPage() {
 
   // 멤버 닉네임 변경 다이얼로그 열기
   const openEditNicknameDialog = (member: Member) => {
-    console.log("🔍 편집할 멤버 정보:", {
-      id: member.id,
-      nickname: member.nickname,
-      userId: member.userId,
-      role: member.role,
-    });
     setEditingMember(member);
     setNewNickname(member.nickname || "");
     setIsEditNicknameOpen(true);
@@ -582,8 +544,7 @@ export default function GroupDetailPage() {
       const detail = await getMemberDetail(group.id, member.id);
       setMemberDetail(detail);
       setIsMemberDetailOpen(true);
-    } catch (error) {
-      console.error("❌ 멤버 상세 정보 로드 실패:", error);
+    } catch {
       alert("멤버 정보를 불러오는데 실패했습니다.");
     } finally {
       setIsLoadingMemberDetail(false);
@@ -637,8 +598,6 @@ export default function GroupDetailPage() {
       setIsRoleChangeOpen(false);
       alert("역할이 성공적으로 변경되었습니다.");
     } catch (error: unknown) {
-      console.error("❌ 역할 변경 실패:", error);
-
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
           response?: { status: number; data?: { message?: string } };
@@ -698,8 +657,6 @@ export default function GroupDetailPage() {
       setIsEditNicknameOpen(false);
       alert("닉네임이 성공적으로 변경되었습니다.");
     } catch (error: unknown) {
-      console.error("❌ 닉네임 변경 실패:", error);
-
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
           response?: { status: number; data?: { message?: string } };
@@ -734,7 +691,7 @@ export default function GroupDetailPage() {
 
   // 할일 삭제 함수
   const handleDeleteTask = async (taskId: number) => {
-    if (!group || !confirm("정말로 이 할일을 삭제하시겠습니까?")) {
+    if (!group || !confirm("정말로 이 할 일을 삭제하시겠습니까?")) {
       return;
     }
 
@@ -742,10 +699,9 @@ export default function GroupDetailPage() {
       await deleteGroupTodoById(taskId, group.id);
       // 로컬 상태에서도 제거
       setTasks(tasks.filter((task) => task.id !== taskId));
-      alert("할일이 성공적으로 삭제되었습니다.");
-    } catch (error) {
-      console.error("❌ 할일 삭제 실패:", error);
-      alert("할일 삭제에 실패했습니다. 다시 시도해주세요.");
+      alert("할 일이 성공적으로 삭제되었습니다.");
+    } catch {
+      alert("할 일 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -779,32 +735,10 @@ export default function GroupDetailPage() {
         member.nickname === user?.nickname
     );
 
-    console.log("🔍 할 일 추가 시작:", {
-      groupId: group.id,
-      user: user,
-      userId: user?.id,
-      userIdAlt: user?.userId,
-      userEmail: user?.email,
-      currentUserMember,
-      actualUserId: currentUserMember?.userId,
-      newTask: newTask,
-    });
-
     // 그룹 데이터 전체 확인
-    console.log("🔍 그룹 데이터 전체:", {
-      group: group,
-      groupKeys: group ? Object.keys(group) : [],
-      groupCreatorId: group?.creatorId,
-      groupCreatedAt: group?.createdAt,
-      groupNumMember: group?.numMember,
-    });
 
     // 사용자 정보에 ID가 없으면 멤버 정보에서 가져와서 업데이트
     if (!user?.id && !user?.userId && currentUserMember?.userId) {
-      console.log(
-        "🔍 사용자 정보에 ID가 없어서 멤버 정보에서 가져옴:",
-        currentUserMember.userId
-      );
       setUser({
         ...user,
         id: currentUserMember.userId,
@@ -815,17 +749,9 @@ export default function GroupDetailPage() {
     // 멤버 상세 정보로 정확한 역할 확인
     if (currentUserMember?.id) {
       try {
-        console.log("🔍 멤버 상세 정보 확인 중...", {
-          groupId: group.id,
-          memberId: currentUserMember.id,
-        });
-        const memberDetail = await getMemberDetail(
-          group.id,
-          currentUserMember.id
-        );
-        console.log("🔍 멤버 상세 정보:", memberDetail);
-      } catch (error) {
-        console.error("❌ 멤버 상세 정보 확인 실패:", error);
+        await getMemberDetail(group.id, currentUserMember.id);
+      } catch {
+        // 멤버 상세 정보 로드 실패 무시
       }
     }
 
@@ -857,49 +783,25 @@ export default function GroupDetailPage() {
           (member) => member.nickname === newTask.assignee
         );
         assignedId = assignedMember?.userId || null;
-        console.log("🔍 담당자 정보:", {
-          assignee: newTask.assignee,
-          assignedMember,
-          assignedId,
-        });
       }
+
+      // 기본 그룹(Mine/Favorite)에서는 항상 개인(PERSONAL)로 전송
+      const effectiveUiType: TaskType = isDefaultGroup(group.groupName)
+        ? ("개인" as TaskType)
+        : newTask.type;
 
       const todoData = {
         content: newTask.description.trim(),
-        todoType: (newTask.type === "공용"
+        todoType: (effectiveUiType === "공용"
           ? "EXCLUSIVE"
-          : newTask.type === "공통"
+          : effectiveUiType === "공통"
           ? "COPYABLE"
           : "PERSONAL") as "EXCLUSIVE" | "COPYABLE" | "PERSONAL",
         startDate: newTask.startDate,
         dueDate: newTask.dueDate,
-        assigned: assignedId,
+        assigned: effectiveUiType === "공용" ? assignedId : null,
         role: currentUserMember?.role || "MEMBER", // 역할 정보 추가
       };
-
-      console.log("🔍 할 일 추가 요청 데이터:", {
-        groupId: group.id,
-        todoData,
-        userInfo: {
-          id: user?.id,
-          userId: user?.userId,
-          email: user?.email,
-          nickname: user?.nickname,
-        },
-        currentUserMember,
-        actualUserId: currentUserMember?.userId,
-      });
-
-      // 권한 확인을 위한 추가 정보
-      console.log("🔍 권한 확인 정보:", {
-        groupId: group.id,
-        groupCreatorId: group.creatorId,
-        userRole: currentUserMember?.role,
-        isCreatorByRole: currentUserMember?.role === "CREATOR",
-        isCreatorById: group.creatorId === currentUserMember?.userId,
-        memberId: currentUserMember?.id,
-        userId: currentUserMember?.userId,
-      });
 
       const createdTask = await createGroupTodo(group.id, todoData);
 
@@ -919,20 +821,20 @@ export default function GroupDetailPage() {
         },
       ]);
 
-      // 폼 초기화
+      // 폼 초기화 (기본 그룹이면 개인으로 고정)
       setNewTask({
         description: "",
         assignee: "",
         startDate: "",
         dueDate: "",
-        type: "공통",
+        type: isDefaultGroup(group.groupName)
+          ? ("개인" as TaskType)
+          : ("공통" as TaskType),
       });
 
       setIsAddingTask(false);
       alert("할 일이 성공적으로 추가되었습니다.");
     } catch (error: unknown) {
-      console.error("❌ 할 일 추가 실패:", error);
-
       if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as {
           response?: { status: number; data?: { message?: string } };
@@ -954,7 +856,7 @@ export default function GroupDetailPage() {
       } else {
         alert("할 일 추가에 실패했습니다. 다시 시도해주세요.");
       }
-
+    } finally {
       setIsAddingTask(false);
     }
   };
@@ -1026,8 +928,7 @@ export default function GroupDetailPage() {
       setEditingTask(null);
       setIsEditingTask(false);
       alert("할 일이 성공적으로 수정되었습니다.");
-    } catch (error) {
-      console.error("❌ 할 일 수정 실패:", error);
+    } catch {
       alert("할 일 수정에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -1253,16 +1154,20 @@ export default function GroupDetailPage() {
                   <p className={styles.infoLabel}>설명</p>
                   <p className={styles.infoValue}>{group.description}</p>
                 </div>
-                <div className={styles.infoItem}>
-                  <p className={styles.infoLabel}>생성일</p>
-                  <p className={styles.infoValue}>
-                    {formatDate(group.createdAt)}
-                  </p>
-                </div>
-                <div className={styles.infoItem}>
-                  <p className={styles.infoLabel}>멤버 수</p>
-                  <p className={styles.infoValue}>{group.numMember}명</p>
-                </div>
+                {!isDefaultGroup(group.groupName) && (
+                  <>
+                    <div className={styles.infoItem}>
+                      <p className={styles.infoLabel}>생성일</p>
+                      <p className={styles.infoValue}>
+                        {formatDate(group.createdAt)}
+                      </p>
+                    </div>
+                    <div className={styles.infoItem}>
+                      <p className={styles.infoLabel}>멤버 수</p>
+                      <p className={styles.infoValue}>{group.numMember}명</p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -1304,11 +1209,6 @@ export default function GroupDetailPage() {
                             <p className={styles.memberName}>
                               {member.nickname}
                             </p>
-                            {member.introduction && (
-                              <p className={styles.memberIntroduction}>
-                                {member.introduction}
-                              </p>
-                            )}
                           </div>
                           <Badge
                             variant="outline"
@@ -1327,7 +1227,7 @@ export default function GroupDetailPage() {
           {/* Right Section - Tasks */}
           <div className={styles.rightSection}>
             <div className={styles.tasksHeader}>
-              <h2 className={styles.tasksTitle}>그룹 할일</h2>
+              <h2 className={styles.tasksTitle}>그룹 할 일</h2>
               <Dialog open={isAddingTask} onOpenChange={setIsAddingTask}>
                 <DialogTrigger asChild>
                   <Button
@@ -1338,13 +1238,12 @@ export default function GroupDetailPage() {
                         : ""
                     }
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    할일 추가
+                    <Plus className="h-4 w-4 mr-2" />할 일 추가
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>새 할일 추가</DialogTitle>
+                    <DialogTitle>새 할 일 추가</DialogTitle>
                   </DialogHeader>
                   <div className={styles.taskDialogForm}>
                     <div>
@@ -1357,19 +1256,29 @@ export default function GroupDetailPage() {
                             description: e.target.value,
                           })
                         }
-                        placeholder="할일 설명을 입력하세요"
+                        placeholder="할 일 설명을 입력하세요"
                       />
                     </div>
                     <div>
                       <label className={styles.label}>타입</label>
                       <select
                         className={styles.select}
-                        value={newTask.type}
+                        value={
+                          isDefaultGroup(group.groupName)
+                            ? "개인"
+                            : newTask.type
+                        }
                         onChange={(e) =>
                           setNewTask({
                             ...newTask,
                             type: e.target.value as TaskType,
                           })
+                        }
+                        disabled={isDefaultGroup(group.groupName)}
+                        title={
+                          isDefaultGroup(group.groupName)
+                            ? "기본 그룹에서는 개인 할 일만 등록할 수 있습니다"
+                            : undefined
                         }
                       >
                         <option value="공통">공통</option>
@@ -1377,7 +1286,9 @@ export default function GroupDetailPage() {
                         <option value="개인">개인</option>
                       </select>
                     </div>
-                    {newTask.type === "공용" && (
+                    {(isDefaultGroup(group.groupName)
+                      ? "개인"
+                      : newTask.type) === "공용" && (
                       <div>
                         <label className={styles.label}>담당자</label>
                         <select
@@ -1464,7 +1375,7 @@ export default function GroupDetailPage() {
                             description: e.target.value,
                           })
                         }
-                        placeholder="할일 설명을 입력하세요"
+                        placeholder="할 일 설명을 입력하세요"
                       />
                     </div>
                     <div>
@@ -1735,9 +1646,9 @@ export default function GroupDetailPage() {
               <Card>
                 <CardContent className={styles.emptyTasks}>
                   <Clock className={styles.emptyIcon} />
-                  <p className={styles.emptyTitle}>아직 할일이 없습니다</p>
+                  <p className={styles.emptyTitle}>아직 할 일이 없습니다</p>
                   <p className={styles.emptyDescription}>
-                    새로운 할일을 추가해보세요
+                    새로운 할 일을 추가해보세요
                   </p>
                 </CardContent>
               </Card>
@@ -1781,22 +1692,6 @@ export default function GroupDetailPage() {
                           );
                         }
                       }
-
-                      console.log("🔍 디버깅 정보:", {
-                        user: user,
-                        userId: user?.id,
-                        userEmail: user?.email,
-                        userNickname: user?.nickname,
-                        members: members,
-                        membersCount: members.length,
-                        memberUserIds: members.map((m) => ({
-                          id: m.id,
-                          userId: m.userId,
-                          nickname: m.nickname,
-                          email: m.email,
-                        })),
-                        foundMember: currentUserMember,
-                      });
 
                       if (!user) {
                         return (
@@ -1878,18 +1773,6 @@ export default function GroupDetailPage() {
                         member.email === user?.email ||
                         member.nickname === user?.nickname
                     );
-
-                    console.log("🔍 그룹 관리 권한 확인:", {
-                      currentUserMember,
-                      userRole: currentUserMember?.role,
-                      isCreator: group.creatorId === user?.id,
-                      isCreatorByMember:
-                        group.creatorId === currentUserMember?.userId,
-                      groupCreatorId: group.creatorId,
-                      userId: user?.id,
-                      memberUserId: currentUserMember?.userId,
-                      groupName: group.groupName,
-                    });
 
                     // CREATOR인 경우 (멤버 역할만 확인)
                     if (currentUserMember?.role === "CREATOR") {
@@ -2283,36 +2166,80 @@ export default function GroupDetailPage() {
       <Dialog open={isHelpModalOpen} onOpenChange={setIsHelpModalOpen}>
         <DialogContent className={styles.helpModal}>
           <DialogHeader>
-            <DialogTitle>그룹 상세 페이지 사용법</DialogTitle>
+            <DialogTitle>그룹 서비스 FAQ</DialogTitle>
           </DialogHeader>
           <div className={styles.helpContent}>
             <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>📋 할일 관리</h3>
-              <ul className={styles.helpList}>
-                <li>"할 일 추가" 버튼으로 새로운 할일을 생성할 수 있습니다</li>
-                <li>
-                  할일 타입: 공통(모든 멤버), 공용(담당자 지정), 개인(개인용)
-                </li>
-                <li>관리자 이상만 할일을 추가/수정/삭제할 수 있습니다</li>
-              </ul>
+              <h3 className={styles.helpSectionTitle}>
+                Q. 누가 할 일을 등록할 수 있나요?
+              </h3>
+              <p
+                style={{
+                  marginBottom: "1rem",
+                  lineHeight: "1.6",
+                  fontSize: "0.875rem",
+                  color: "#374151",
+                }}
+              >
+                A. <strong>그룹 생성자</strong> 또는{" "}
+                <strong>그룹 관리자</strong>만 할 일을 등록할 수 있습니다.
+              </p>
+              <p
+                style={{
+                  marginBottom: "1.5rem",
+                  lineHeight: "1.6",
+                  fontSize: "0.875rem",
+                  color: "#6b7280",
+                }}
+              >
+                등록 시 담당자를 지정해 특정 멤버에게 할 일을 맡길 수도
+                있습니다.
+              </p>
             </div>
 
             <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>👥 멤버 관리</h3>
-              <ul className={styles.helpList}>
-                <li>멤버를 클릭하면 상세 정보를 볼 수 있습니다</li>
-                <li>생성자만 다른 멤버의 역할을 변경할 수 있습니다</li>
-                <li>멤버는 관리자, 일반 멤버로 구분됩니다</li>
-              </ul>
+              <h3 className={styles.helpSectionTitle}>
+                Q. 할 일 수정은 누가 할 수 있나요?
+              </h3>
+              <p
+                style={{
+                  marginBottom: "1.5rem",
+                  lineHeight: "1.6",
+                  fontSize: "0.875rem",
+                  color: "#374151",
+                }}
+              >
+                A. 할 일 수정 역시 <strong>그룹 생성자</strong>나{" "}
+                <strong>관리자</strong>만 가능합니다.
+              </p>
             </div>
 
             <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>⚙️ 그룹 설정</h3>
-              <ul className={styles.helpList}>
-                <li>생성자만 그룹 정보를 수정할 수 있습니다</li>
-                <li>생성자는 그룹을 삭제할 수 있습니다</li>
-                <li>관리자와 멤버는 그룹을 탈퇴할 수 있습니다</li>
-              </ul>
+              <h3 className={styles.helpSectionTitle}>
+                Q. 그룹 정보는 누가 수정할 수 있나요?
+              </h3>
+              <p
+                style={{
+                  marginBottom: "0.75rem",
+                  lineHeight: "1.6",
+                  fontSize: "0.875rem",
+                  color: "#374151",
+                }}
+              >
+                A. <strong>그룹 생성자</strong>만 그룹 이름이나 설명 등 정보를
+                수정할 수 있으며,
+              </p>
+              <p
+                style={{
+                  marginBottom: "1.5rem",
+                  lineHeight: "1.6",
+                  fontSize: "0.875rem",
+                  color: "#6b7280",
+                }}
+              >
+                필요할 경우 <strong>일반 멤버를 관리자</strong>로 지정할 수도
+                있습니다.
+              </p>
             </div>
           </div>
           <div className={styles.helpFooter}>

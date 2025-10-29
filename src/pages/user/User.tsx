@@ -35,7 +35,6 @@ import {
   Edit,
 } from "lucide-react";
 import { getStoredUser, getStoredToken } from "@/apis/auth";
-import questionmarkIcon from "../../assets/questionmark.svg";
 import {
   getUserProfile,
   getUserStats,
@@ -188,7 +187,6 @@ export default function UserPage() {
   const [editingNickname, setEditingNickname] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
   // Mock data for fallback
   const mockUserData: UserData = useMemo(
@@ -254,15 +252,15 @@ export default function UserPage() {
       achievements: [
         {
           id: 1,
-          title: "첫 할일 완료",
-          description: "첫 번째 할일을 완료했습니다",
+          title: "첫 할 일 완료",
+          description: "첫 번째 할 일을 완료했습니다",
           icon: "🎯",
           earned: true,
         },
         {
           id: 2,
           title: "연속 7일",
-          description: "7일 연속으로 할일을 완료했습니다",
+          description: "7일 연속으로 할 일을 완료했습니다",
           icon: "🔥",
           earned: true,
         },
@@ -289,11 +287,7 @@ export default function UserPage() {
         const storedUser = getStoredUser();
         const storedToken = getStoredToken();
 
-        console.log("👤 저장된 사용자:", storedUser);
-        console.log("🔑 저장된 토큰:", storedToken ? "존재함" : "없음");
-
         if (!storedToken) {
-          console.warn("⚠️ 토큰이 없어서 기본 데이터 사용");
           setUserData(mockUserData);
           return;
         }
@@ -302,31 +296,24 @@ export default function UserPage() {
         const [profileData, , groups, activities, weeklyData, reportData] =
           await Promise.all([
             getUserProfile().catch(() => {
-              console.log("프로필 API 실패, 기본 데이터 사용");
               return null;
             }),
             getUserStats().catch(() => {
-              console.log("통계 API 실패, 기본 데이터 사용");
               return null;
             }),
             getUserGroups().catch(() => {
-              console.log("그룹 API 실패, 기본 데이터 사용");
               return null;
             }),
             getRecentActivities().catch(() => {
-              console.log("활동 API 실패, 기본 데이터 사용");
               return null;
             }),
             getWeeklyStats().catch(() => {
-              console.log("주간 데이터 API 실패, 기본 데이터 사용");
               return null;
             }),
             getActivityReport().catch(() => {
-              console.log("활동 전황 API 실패, 기본 데이터 사용");
               return null;
             }),
             getAchievements().catch(() => {
-              console.log("업적 API 실패, 기본 데이터 사용");
               return null;
             }),
           ]);
@@ -360,10 +347,6 @@ export default function UserPage() {
               recentActivities: activities || mockUserData.recentActivities,
             };
 
-        console.log("🔍 최종 사용자 데이터:", finalUserData);
-        console.log("🔍 Avatar URL:", finalUserData.avatar);
-        console.log("🔍 ProfileData:", profileData);
-        console.log("🔍 StoredUser:", storedUser);
         setUserData(finalUserData);
 
         // 주간 데이터 설정
@@ -375,13 +358,7 @@ export default function UserPage() {
         if (reportData) {
           setActivityReport(reportData);
         }
-
-        console.log("✅ 사용자 데이터 로드 완료:", finalUserData);
-        console.log("✅ 그룹 데이터 로드 완료:", groups);
-        console.log("✅ 주간 데이터 로드 완료:", weeklyData);
-        console.log("✅ 활동 전황 데이터 로드 완료:", reportData);
-      } catch (error) {
-        console.error("사용자 데이터 로드 실패:", error);
+      } catch {
         setUserData(mockUserData);
       } finally {
         setLoading(false);
@@ -445,14 +422,12 @@ export default function UserPage() {
           imageUrl: updatedUser.imageUrl || storedUser.imageUrl,
         };
         localStorage.setItem("user", JSON.stringify(updatedStoredUser));
-        console.log("✅ localStorage 업데이트 완료:", updatedStoredUser);
       }
 
       setIsEditingProfile(false);
       setSelectedImage(null);
       setImagePreview(null);
-    } catch (error) {
-      console.error("프로필 수정 실패:", error);
+    } catch {
       alert("프로필 수정에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -487,16 +462,6 @@ export default function UserPage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className={styles.headerTitle}>프로필</h1>
-            <button
-              className={styles.helpButton}
-              onClick={() => setIsHelpModalOpen(true)}
-            >
-              <img
-                src={questionmarkIcon}
-                alt="도움말"
-                className={styles.helpIcon}
-              />
-            </button>
           </div>
         </div>
       </header>
@@ -516,10 +481,6 @@ export default function UserPage() {
                         src={userData.imageUrl}
                         alt={`${userData.name}의 프로필 이미지`}
                         onError={(e) => {
-                          console.log(
-                            "❌ 이미지 로드 실패:",
-                            userData.imageUrl
-                          );
                           e.currentTarget.style.display = "none";
                         }}
                       />
@@ -566,7 +527,7 @@ export default function UserPage() {
                     <div className={styles.statNumber}>
                       {activityReport.completedCount}
                     </div>
-                    <div className={styles.statLabel}>완료한 할일</div>
+                    <div className={styles.statLabel}>완료한 할 일</div>
                   </div>
                   <div className={styles.statItem}>
                     <div className={styles.statNumber}>
@@ -641,21 +602,21 @@ export default function UserPage() {
                     <div className={styles.activityNumber}>
                       {activityReport.completedCount}
                     </div>
-                    <div className={styles.activityLabel}>완료한 할일</div>
+                    <div className={styles.activityLabel}>완료한 할 일</div>
                   </div>
                   <div className={styles.activityItem}>
                     <Clock className="h-8 w-8" />
                     <div className={styles.activityNumber}>
                       {activityReport.inProgressCount}
                     </div>
-                    <div className={styles.activityLabel}>진행중인 할일</div>
+                    <div className={styles.activityLabel}>진행중인 할 일</div>
                   </div>
                   <div className={styles.activityItem}>
                     <Circle className="h-8 w-8" />
                     <div className={styles.activityNumber}>
                       {activityReport.inCompletedCount}
                     </div>
-                    <div className={styles.activityLabel}>미완료 할일</div>
+                    <div className={styles.activityLabel}>미완료 할 일</div>
                   </div>
                 </div>
               </CardContent>
@@ -716,10 +677,6 @@ export default function UserPage() {
                     } else {
                       barHeight = 8 + count * 20; // 1개당 20px씩 추가
                     }
-
-                    console.log(
-                      `요일 ${index}: count=${count}, barHeight=${barHeight}px`
-                    );
 
                     return (
                       <div key={index} className={styles.chartBar}>
@@ -889,49 +846,6 @@ export default function UserPage() {
                 취소
               </Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* 도움말 모달 */}
-      <Dialog open={isHelpModalOpen} onOpenChange={setIsHelpModalOpen}>
-        <DialogContent className={styles.helpModal}>
-          <DialogHeader>
-            <DialogTitle>프로필 페이지 사용법</DialogTitle>
-          </DialogHeader>
-          <div className={styles.helpContent}>
-            <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>👤 프로필 관리</h3>
-              <ul className={styles.helpList}>
-                <li>
-                  "프로필 수정" 버튼으로 닉네임, 소개, 프로필 이미지를 변경할 수
-                  있습니다
-                </li>
-                <li>프로필 이미지는 파일을 선택하여 업로드할 수 있습니다</li>
-                <li>이메일은 변경할 수 없습니다</li>
-              </ul>
-            </div>
-
-            <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>📊 통계 정보</h3>
-              <ul className={styles.helpList}>
-                <li>완료한 할일 수와 최대 연속일을 확인할 수 있습니다</li>
-                <li>완료율과 현재 연속 완료일을 볼 수 있습니다</li>
-                <li>주간 목표 달성률을 확인할 수 있습니다</li>
-              </ul>
-            </div>
-
-            <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>👥 그룹 정보</h3>
-              <ul className={styles.helpList}>
-                <li>참여 중인 그룹 목록을 확인할 수 있습니다</li>
-                <li>각 그룹의 멤버 수를 볼 수 있습니다</li>
-                <li>최근 활동 내역을 확인할 수 있습니다</li>
-              </ul>
-            </div>
-          </div>
-          <div className={styles.helpFooter}>
-            <Button onClick={() => setIsHelpModalOpen(false)}>확인</Button>
           </div>
         </DialogContent>
       </Dialog>

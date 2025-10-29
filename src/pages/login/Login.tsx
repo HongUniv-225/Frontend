@@ -12,29 +12,26 @@ export default function LoginPage() {
 
   const features = [
     {
-      title: "그룹으로 함께 관리하세요",
-      description:
-        "팀원들과 함께 할일을 공유하고 협업하세요. 실시간으로 진행 상황을 확인할 수 있습니다.",
-      image: "/feature-group.jpg",
+      title: "메인에서 오늘 할 일을 한눈에",
+      description: "중앙 패널에서 오늘의 할 일을 빠르게 확인하고 관리하세요.",
+      image: "/main.svg",
     },
     {
-      title: "날짜별로 체계적으로",
-      description:
-        "캘린더를 통해 날짜별 할일을 관리하고, 마감일을 놓치지 마세요.",
-      image: "/feature-calendar.jpg",
+      title: "그룹 상세에서 협업을 더 쉽게",
+      description: "그룹별 진행 현황과 할 일을 한 곳에서 정리하고 소통하세요.",
+      image: "/profile.svg",
     },
     {
-      title: "다양한 카테고리",
-      description:
-        "취미, 학습, 운동, 문학 등 다양한 카테고리로 그룹을 구성하고 관리하세요.",
-      image: "/feature-category.jpg",
+      title: "프로필에서 나의 기록을",
+      description: "완료 현황과 활동 기록을 프로필에서 확인하세요.",
+      image: "/group-detail.svg",
     },
   ];
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % features.length);
-    }, 5000);
+    }, 15000);
     return () => clearInterval(timer);
   }, [features.length]);
 
@@ -93,7 +90,6 @@ export default function LoginPage() {
 
       window.location.href = authUrl;
     } catch (error) {
-      console.error("Google 로그인 오류:", error);
       setError("Google 로그인 중 오류가 발생했습니다.");
     }
   };
@@ -117,9 +113,11 @@ export default function LoginPage() {
               {features.map((feature, index) => (
                 <div key={index} className={styles.slide}>
                   <div className={styles.imageContainer}>
-                    <div className={styles.placeholderImage}>
-                      {/* 이미지가 없을 경우 그라데이션 배경만 표시 */}
-                    </div>
+                    <img
+                      src={feature.image}
+                      alt={feature.title}
+                      className={styles.slideImage}
+                    />
                   </div>
                   <div className={styles.slideContent}>
                     <h3 className={styles.slideTitle}>{feature.title}</h3>
@@ -191,7 +189,7 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Google로 시작하기
+            Google 계정으로 가입
           </Button>
 
           <p className={styles.terms}>

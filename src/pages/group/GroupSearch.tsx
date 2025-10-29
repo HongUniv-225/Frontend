@@ -1,17 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "../../components/common/card/Card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/common/dialog/Dialog";
 import Button from "../../components/common/button/Button";
 import Badge from "../../components/common/badge/Badge";
 import Input from "../../components/common/input/Input";
 import { getPublicGroups, getMyGroups, joinGroup } from "../../apis/user";
-import questionmarkIcon from "../../assets/questionmark.svg";
 import styles from "./groupSearch.module.scss";
 
 interface Group {
@@ -49,7 +42,6 @@ const GroupSearch = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [myGroups, setMyGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -61,10 +53,7 @@ const GroupSearch = () => {
 
         setGroups(publicGroupsData);
         setMyGroups(myGroupsData);
-        console.log("✅ 공개 그룹 로드 완료:", publicGroupsData);
-        console.log("✅ 내 그룹 로드 완료:", myGroupsData);
-      } catch (error) {
-        console.error("❌ 그룹 로드 실패:", error);
+      } catch {
         setGroups([]);
         setMyGroups([]);
       } finally {
@@ -91,10 +80,7 @@ const GroupSearch = () => {
 
   const handleJoinGroup = async (groupId: number) => {
     try {
-      console.log("🔍 그룹 참여 시도:", { groupId });
-
-      const response = await joinGroup(groupId);
-      console.log("✅ 그룹 참여 성공:", response);
+      await joinGroup(groupId);
 
       // 참여 성공 후 내 그룹 목록 새로고침
       const updatedMyGroups = await getMyGroups();
@@ -110,8 +96,7 @@ const GroupSearch = () => {
       );
 
       alert("그룹에 성공적으로 참여했습니다!");
-    } catch (error) {
-      console.error("❌ 그룹 참여 실패:", error);
+    } catch {
       alert("그룹 참여에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -152,16 +137,6 @@ const GroupSearch = () => {
                   </svg>
                 </div>
                 <h1>그룹 탐색</h1>
-                <button
-                  className={styles.helpButton}
-                  onClick={() => setIsHelpModalOpen(true)}
-                >
-                  <img
-                    src={questionmarkIcon}
-                    alt="도움말"
-                    className={styles.helpIcon}
-                  />
-                </button>
               </div>
             </div>
           </div>
@@ -307,46 +282,6 @@ const GroupSearch = () => {
           )}
         </div>
       </main>
-
-      {/* 도움말 모달 */}
-      <Dialog open={isHelpModalOpen} onOpenChange={setIsHelpModalOpen}>
-        <DialogContent className={styles.helpModal}>
-          <DialogHeader>
-            <DialogTitle>그룹 탐색 사용법</DialogTitle>
-          </DialogHeader>
-          <div className={styles.helpContent}>
-            <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>🔍 그룹 검색</h3>
-              <ul className={styles.helpList}>
-                <li>검색창에 그룹명을 입력하여 검색할 수 있습니다</li>
-                <li>카테고리 필터로 원하는 유형의 그룹을 찾을 수 있습니다</li>
-                <li>공개 그룹만 검색 결과에 표시됩니다</li>
-              </ul>
-            </div>
-
-            <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>👥 그룹 참여</h3>
-              <ul className={styles.helpList}>
-                <li>"참여하기" 버튼을 클릭하여 그룹에 참여할 수 있습니다</li>
-                <li>이미 참여 중인 그룹은 "참여 중"으로 표시됩니다</li>
-                <li>그룹 참여 후 그룹 상세 페이지에서 활동할 수 있습니다</li>
-              </ul>
-            </div>
-
-            <div className={styles.helpSection}>
-              <h3 className={styles.helpSectionTitle}>📋 그룹 정보</h3>
-              <ul className={styles.helpList}>
-                <li>그룹명, 설명, 카테고리, 멤버 수를 확인할 수 있습니다</li>
-                <li>그룹 이미지와 생성일을 볼 수 있습니다</li>
-                <li>그룹을 클릭하면 상세 정보를 볼 수 있습니다</li>
-              </ul>
-            </div>
-          </div>
-          <div className={styles.helpFooter}>
-            <Button onClick={() => setIsHelpModalOpen(false)}>확인</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

@@ -181,13 +181,10 @@
   font-weight: 500;
   color: #111827;
   margin: 0;
-}
-
-.memberIntroduction {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin: 0.25rem 0 0 0;
-  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .memberRole {
