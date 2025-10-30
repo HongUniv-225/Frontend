@@ -48,7 +48,7 @@ export default function AuthCallback() {
 
       const sendTokenToBackend = async (googleAccessToken: string) => {
         return axios.post(
-          `https://grouptodo.ddnsfree.com/api/v1/users/auth/login/google`,
+          `https://grouptodo.freeddns.org/api/v1/users/auth/login/google`,
           { accessToken: googleAccessToken },
           {
             withCredentials: true,
@@ -58,7 +58,7 @@ export default function AuthCallback() {
 
       const sendCodeToBackend = async (code: string) => {
         return axios.post(
-          `https://grouptodo.ddnsfree.com/api/v1/users/auth/login/google?code=${encodeURIComponent(
+          `https://grouptodo.freeddns.org/api/v1/users/auth/login/google?code=${encodeURIComponent(
             code
           )}`,
           {},
