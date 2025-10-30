@@ -2,7 +2,7 @@ import axios from "axios";
 import { getStoredToken, setStoredToken } from "./auth";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://grouptodo.freeddns.org";
+  import.meta.env.VITE_API_URL || "https://grouptodo.ddnsfree.com";
 
 // API 요청 시 accessToken을 헤더에 포함하는 axios 인스턴스
 const apiClient = axios.create({

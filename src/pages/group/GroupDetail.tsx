@@ -62,6 +62,7 @@ import {
   createGroupTodo,
   updateGroupTodo,
   deleteGroupTodoById,
+  getUserTodosByDate,
 } from "../../apis/user";
 import styles from "./groupDetail.module.scss";
 
@@ -188,6 +189,7 @@ const convertApiStatusToUiStatus = (
     case "IN_PROGRESS":
       return "in-progress";
     case "COMPLETED":
+    case "COMPLETE":
       return "completed";
     case "FAILED":
       return "failed";
@@ -208,6 +210,70 @@ const convertApiTodoTypeToUiType = (todoType: string): TaskType => {
     default:
       return "공통";
   }
+};
+
+// 날짜 기반으로 상태를 계산하는 함수 (API가 상태를 주지 않는 경우 대비)
+const deriveStatusFromDates = (
+  startDate: string,
+  dueDate: string
+): "pending" | "in-progress" | "completed" | "failed" => {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  if (todayStr < startDate) return "pending";
+  if (todayStr > dueDate) return "failed";
+  return "in-progress";
+};
+
+// 비즈니스 규칙에 따른 상태 파생 (todoStatus가 없을 때 적용)
+const deriveStatusByRules = (params: {
+  todoType: string; // API 유형: PERSONAL | EXCLUSIVE | COPYABLE
+  assigned: number | null;
+  startDate: string;
+  dueDate: string;
+  todoStatus?: string | null; // API가 주면 우선 사용
+  completed?: boolean; // API가 boolean로 줄 수 있음
+}): "pending" | "in-progress" | "completed" | "failed" => {
+  const { todoType, assigned, startDate, dueDate, todoStatus, completed } =
+    params;
+
+  // 별도 완료 플래그가 있다면 우선 완료 처리
+  if (completed) {
+    return "completed";
+  }
+
+  // 완료 플래그가 명시적으로 false인 경우, 백엔드가 COMPLETE/COMPLETED를 내려도 무시하고 재산출
+  const backendSaysCompleted =
+    todoStatus === "COMPLETE" || todoStatus === "COMPLETED";
+  if (!(completed === false && backendSaysCompleted)) {
+    // 위 조건이 아니라면, 백엔드 상태를 우선 사용
+    if (todoStatus) {
+      return convertApiStatusToUiStatus(todoStatus);
+    }
+  }
+
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+
+  if (todoType === "COPYABLE") {
+    if (todayStr < startDate) return "pending"; // 시작 전
+    if (todayStr <= dueDate) return "in-progress"; // 진행 중
+    return "completed"; // 마감 후 자동 완료 간주
+  }
+
+  // PERSONAL, EXCLUSIVE 공통
+  if (todayStr < startDate) return "pending"; // 시작 전
+  if (todayStr <= dueDate) {
+    // EXCLUSIVE는 할당 없으면 대기 유지
+    if (
+      todoType === "EXCLUSIVE" &&
+      (assigned === null || assigned === undefined)
+    ) {
+      return "pending";
+    }
+    return "in-progress";
+  }
+  // 마감 후: 완료 정보 없으면 미완료로 간주
+  return "failed";
 };
 
 // 카테고리를 한국어로 매핑하는 함수
@@ -254,6 +320,18 @@ export default function GroupDetailPage() {
     completed: false,
     failed: false,
   });
+  // 각 섹션: 아이템 유무에 따라 기본 접힘/펼침 상태 자동 설정
+  useEffect(() => {
+    const hasPending = tasks.some((t) => t.status === "pending");
+    const hasInProgress = tasks.some((t) => t.status === "in-progress");
+    const hasCompleted = tasks.some((t) => t.status === "completed");
+    const hasFailed = tasks.some((t) => t.status === "failed");
+
+    setShowPending(hasPending);
+    setShowInProgress(hasInProgress);
+    setShowCompleted(hasCompleted);
+    setShowFailed(hasFailed);
+  }, [tasks]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDeletingGroup, setIsDeletingGroup] = useState(false);
   const [isLeavingGroup, setIsLeavingGroup] = useState(false);
@@ -346,23 +424,49 @@ export default function GroupDetailPage() {
       const fetchGroupTodos = async () => {
         try {
           const todosData = await getGroupTodos(groupId);
+          // 오늘 날짜 기준 사용자 완료 상태 동기화 (타임존 안전 키)
+          const todayStr = new Date().toLocaleDateString("sv-SE");
+          let userTodosToday: Array<{ todoId?: number; completed?: boolean }> =
+            [];
+          try {
+            userTodosToday = await getUserTodosByDate(todayStr);
+          } catch {
+            userTodosToday = [];
+          }
 
           // API 응답을 Task 형태로 변환
           const convertedTasks: Task[] = todosData.map(
             (todo: {
               id: number;
               content: string;
-              todoType: string;
-              assigned: number;
-              todoStatus: string;
+              todoType: string; // PERSONAL | EXCLUSIVE | COPYABLE
+              assigned: number | null;
+              todoStatus?: string | null;
               startDate: string;
               dueDate: string;
+              isCompleted?: boolean;
+              completed?: boolean;
             }) => {
+              const userCompleted = userTodosToday.find(
+                (u) => u.todoId === todo.id
+              )?.completed;
               // assigned ID로 닉네임 찾기
               const assignedMember = members.find(
                 (member) => member.userId === todo.assigned
               );
               const assigneeNickname = assignedMember?.nickname || "";
+
+              const uiStatus = deriveStatusByRules({
+                todoType: todo.todoType,
+                assigned: todo.assigned,
+                startDate: todo.startDate,
+                dueDate: todo.dueDate,
+                todoStatus: todo.todoStatus,
+                completed:
+                  userCompleted ??
+                  (todo as any).isCompleted ??
+                  (todo as any).completed,
+              });
 
               return {
                 id: todo.id,
@@ -372,7 +476,7 @@ export default function GroupDetailPage() {
                 type: convertApiTodoTypeToUiType(todo.todoType),
                 assigned: todo.assigned,
                 assignee: assigneeNickname,
-                status: convertApiStatusToUiStatus(todo.todoStatus),
+                status: uiStatus,
                 startDate: todo.startDate,
                 dueDate: todo.dueDate,
               };
@@ -453,8 +557,14 @@ export default function GroupDetailPage() {
       return;
     }
 
-    // 생성자 권한 확인
-    if (group.creatorId !== user?.id) {
+    // 공개 범위 제한: PUBLIC → PERSONAL 변경 금지
+    if (group.scope === "PUBLIC" && editGroupData.scope === "PERSONAL") {
+      alert("PUBLIC 그룹은 PERSONAL 그룹으로 변경할 수 없습니다");
+      return;
+    }
+
+    // 생성자 권한 확인 - 현재 사용자 역할 기준으로 확인
+    if (getCurrentUserRole() !== "CREATOR") {
       alert("그룹 생성자만 그룹 정보를 수정할 수 있습니다.");
       return;
     }
@@ -510,8 +620,8 @@ export default function GroupDetailPage() {
       return;
     }
 
-    // 생성자 권한 확인
-    if (group.creatorId !== user?.id) {
+    // 생성자 권한 확인 - 현재 사용자 역할 기준으로 확인
+    if (getCurrentUserRole() !== "CREATOR") {
       alert("그룹 생성자만 그룹 정보를 수정할 수 있습니다.");
       return;
     }
@@ -768,10 +878,7 @@ export default function GroupDetailPage() {
       alert("마감일을 선택해주세요.");
       return;
     }
-    if (newTask.type === "공용" && !newTask.assignee) {
-      alert("담당자를 선택해주세요.");
-      return;
-    }
+    // 공용(EXCLUSIVE)이라도 담당자 미지정 허용 (null로 전송)
 
     try {
       setIsAddingTask(true);
@@ -817,7 +924,16 @@ export default function GroupDetailPage() {
           startDate: createdTask.startDate,
           dueDate: createdTask.dueDate,
           type: convertApiTodoTypeToUiType(createdTask.todoType),
-          status: "pending",
+          status: deriveStatusByRules({
+            todoType: createdTask.todoType,
+            assigned: assignedId,
+            startDate: createdTask.startDate,
+            dueDate: createdTask.dueDate,
+            todoStatus: createdTask.todoStatus,
+            completed:
+              (createdTask as any).isCompleted ||
+              (createdTask as any).completed,
+          }),
         },
       ]);
 
@@ -882,10 +998,7 @@ export default function GroupDetailPage() {
       alert("마감일을 선택해주세요.");
       return;
     }
-    if (editingTask.type === "공용" && !editingTask.assignee) {
-      alert("담당자를 선택해주세요.");
-      return;
-    }
+    // 공용(EXCLUSIVE)이라도 담당자 미지정 허용 (null로 전송)
 
     try {
       // 담당자 ID 찾기
@@ -920,6 +1033,25 @@ export default function GroupDetailPage() {
                 description: updatedTask.content,
                 assignee: editingTask.assignee,
                 assigned: assignedId,
+                type: convertApiTodoTypeToUiType(
+                  updatedTask.todoType || task.type
+                ),
+                status: deriveStatusByRules({
+                  todoType:
+                    updatedTask.todoType ||
+                    (task.type === "공용"
+                      ? "EXCLUSIVE"
+                      : task.type === "공통"
+                      ? "COPYABLE"
+                      : "PERSONAL"),
+                  assigned: assignedId,
+                  startDate: updatedTask.startDate,
+                  dueDate: updatedTask.dueDate,
+                  todoStatus: updatedTask.todoStatus,
+                  completed:
+                    (updatedTask as any).isCompleted ||
+                    (updatedTask as any).completed,
+                }),
               }
             : task
         )
@@ -971,9 +1103,9 @@ export default function GroupDetailPage() {
 
               <div className={styles.taskFooter}>
                 <div className={styles.taskDetails}>
-                  {task.type === "공용" && task.assignee && (
+                  {task.type === "공용" && (
                     <span className={styles.assignee}>
-                      담당: {task.assignee}
+                      담당: {task.assignee || "미지정"}
                     </span>
                   )}
                   <div className={styles.dateInfo}>
@@ -1298,7 +1430,7 @@ export default function GroupDetailPage() {
                             setNewTask({ ...newTask, assignee: e.target.value })
                           }
                         >
-                          <option value="">담당자 선택</option>
+                          <option value="">미지정</option>
                           {members
                             .sort((a, b) => {
                               const priorityA = getRolePriority(a.role);
@@ -1402,7 +1534,7 @@ export default function GroupDetailPage() {
                             })
                           }
                         >
-                          <option value="">담당자 선택</option>
+                          <option value="">미지정</option>
                           {members
                             .sort((a, b) => {
                               const priorityA = getRolePriority(a.role);
@@ -1468,179 +1600,187 @@ export default function GroupDetailPage() {
               </DialogContent>
             </Dialog>
 
-            {tasksByStatus.pending.length > 0 && (
-              <div className={styles.taskSection}>
-                <button
-                  onClick={() => setShowPending(!showPending)}
-                  className={styles.sectionHeader}
-                >
-                  <Clock className="h-5 w-5 text-yellow-500" />
-                  <h3 className={styles.sectionTitle}>대기</h3>
-                  <Badge variant="secondary" className={styles.sectionBadge}>
-                    {tasksByStatus.pending.length}개
-                  </Badge>
-                  <ChevronDown
-                    className={`${styles.chevron} ${
-                      showPending ? styles.rotated : ""
-                    }`}
-                  />
-                </button>
-                {showPending && (
-                  <div className={styles.tasksList}>
-                    {getDisplayedTasks("pending").map(renderTaskItem)}
-                    {tasksByStatus.pending.length > 7 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={styles.expandButton}
-                        onClick={() => toggleExpanded("pending")}
-                      >
-                        {expandedSections.pending
-                          ? "접기"
-                          : `더보기 (${tasksByStatus.pending.length - 7}개 더)`}
-                        <ChevronDown
-                          className={`${styles.chevron} ${
-                            expandedSections.pending ? styles.rotated : ""
-                          }`}
-                        />
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className={styles.taskSection}>
+              <button
+                onClick={() => setShowPending(!showPending)}
+                className={styles.sectionHeader}
+              >
+                <Clock className="h-5 w-5 text-yellow-500" />
+                <h3 className={styles.sectionTitle}>대기</h3>
+                <Badge variant="secondary" className={styles.sectionBadge}>
+                  {tasksByStatus.pending.length}개
+                </Badge>
+                <ChevronDown
+                  className={`${styles.chevron} ${
+                    showPending ? styles.rotated : ""
+                  }`}
+                />
+              </button>
+              {showPending && (
+                <div className={styles.tasksList}>
+                  {getDisplayedTasks("pending").map(renderTaskItem)}
+                  {tasksByStatus.pending.length > 7 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={styles.expandButton}
+                      onClick={() => toggleExpanded("pending")}
+                    >
+                      {expandedSections.pending
+                        ? "접기"
+                        : `더보기 (${tasksByStatus.pending.length - 7}개 더)`}
+                      <ChevronDown
+                        className={`${styles.chevron} ${
+                          expandedSections.pending ? styles.rotated : ""
+                        }`}
+                      />
+                    </Button>
+                  )}
+                  {tasksByStatus.pending.length === 0 && (
+                    <div className={styles.emptyTasks}>
+                      표시할 항목이 없습니다
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-            {tasksByStatus["in-progress"].length > 0 && (
-              <div className={styles.taskSection}>
-                <button
-                  onClick={() => setShowInProgress(!showInProgress)}
-                  className={styles.sectionHeader}
-                >
-                  <PlayCircle className="h-5 w-5 text-blue-500" />
-                  <h3 className={styles.sectionTitle}>진행중</h3>
-                  <Badge variant="secondary" className={styles.sectionBadge}>
-                    {tasksByStatus["in-progress"].length}개
-                  </Badge>
-                  <ChevronDown
-                    className={`${styles.chevron} ${
-                      showInProgress ? styles.rotated : ""
-                    }`}
-                  />
-                </button>
-                {showInProgress && (
-                  <div className={styles.tasksList}>
-                    {getDisplayedTasks("in-progress").map(renderTaskItem)}
-                    {tasksByStatus["in-progress"].length > 7 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={styles.expandButton}
-                        onClick={() => toggleExpanded("in-progress")}
-                      >
-                        {expandedSections["in-progress"]
-                          ? "접기"
-                          : `더보기 (${
-                              tasksByStatus["in-progress"].length - 7
-                            }개 더)`}
-                        <ChevronDown
-                          className={`${styles.chevron} ${
-                            expandedSections["in-progress"]
-                              ? styles.rotated
-                              : ""
-                          }`}
-                        />
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className={styles.taskSection}>
+              <button
+                onClick={() => setShowInProgress(!showInProgress)}
+                className={styles.sectionHeader}
+              >
+                <PlayCircle className="h-5 w-5 text-blue-500" />
+                <h3 className={styles.sectionTitle}>진행중</h3>
+                <Badge variant="secondary" className={styles.sectionBadge}>
+                  {tasksByStatus["in-progress"].length}개
+                </Badge>
+                <ChevronDown
+                  className={`${styles.chevron} ${
+                    showInProgress ? styles.rotated : ""
+                  }`}
+                />
+              </button>
+              {showInProgress && (
+                <div className={styles.tasksList}>
+                  {getDisplayedTasks("in-progress").map(renderTaskItem)}
+                  {tasksByStatus["in-progress"].length > 7 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={styles.expandButton}
+                      onClick={() => toggleExpanded("in-progress")}
+                    >
+                      {expandedSections["in-progress"]
+                        ? "접기"
+                        : `더보기 (${
+                            tasksByStatus["in-progress"].length - 7
+                          }개 더)`}
+                      <ChevronDown
+                        className={`${styles.chevron} ${
+                          expandedSections["in-progress"] ? styles.rotated : ""
+                        }`}
+                      />
+                    </Button>
+                  )}
+                  {tasksByStatus["in-progress"].length === 0 && (
+                    <div className={styles.emptyTasks}>
+                      표시할 항목이 없습니다
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-            {tasksByStatus.completed.length > 0 && (
-              <div className={styles.taskSection}>
-                <button
-                  onClick={() => setShowCompleted(!showCompleted)}
-                  className={styles.sectionHeader}
-                >
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  <h3 className={styles.sectionTitle}>완료</h3>
-                  <Badge variant="secondary" className={styles.sectionBadge}>
-                    {tasksByStatus.completed.length}개
-                  </Badge>
-                  <ChevronDown
-                    className={`${styles.chevron} ${
-                      showCompleted ? styles.rotated : ""
-                    }`}
-                  />
-                </button>
-                {showCompleted && (
-                  <div className={styles.tasksList}>
-                    {getDisplayedTasks("completed").map(renderTaskItem)}
-                    {tasksByStatus.completed.length > 7 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={styles.expandButton}
-                        onClick={() => toggleExpanded("completed")}
-                      >
-                        {expandedSections.completed
-                          ? "접기"
-                          : `더보기 (${
-                              tasksByStatus.completed.length - 7
-                            }개 더)`}
-                        <ChevronDown
-                          className={`${styles.chevron} ${
-                            expandedSections.completed ? styles.rotated : ""
-                          }`}
-                        />
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className={styles.taskSection}>
+              <button
+                onClick={() => setShowCompleted(!showCompleted)}
+                className={styles.sectionHeader}
+              >
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <h3 className={styles.sectionTitle}>완료</h3>
+                <Badge variant="secondary" className={styles.sectionBadge}>
+                  {tasksByStatus.completed.length}개
+                </Badge>
+                <ChevronDown
+                  className={`${styles.chevron} ${
+                    showCompleted ? styles.rotated : ""
+                  }`}
+                />
+              </button>
+              {showCompleted && (
+                <div className={styles.tasksList}>
+                  {getDisplayedTasks("completed").map(renderTaskItem)}
+                  {tasksByStatus.completed.length > 7 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={styles.expandButton}
+                      onClick={() => toggleExpanded("completed")}
+                    >
+                      {expandedSections.completed
+                        ? "접기"
+                        : `더보기 (${tasksByStatus.completed.length - 7}개 더)`}
+                      <ChevronDown
+                        className={`${styles.chevron} ${
+                          expandedSections.completed ? styles.rotated : ""
+                        }`}
+                      />
+                    </Button>
+                  )}
+                  {tasksByStatus.completed.length === 0 && (
+                    <div className={styles.emptyTasks}>
+                      표시할 항목이 없습니다
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-            {tasksByStatus.failed.length > 0 && (
-              <div className={styles.taskSection}>
-                <button
-                  onClick={() => setShowFailed(!showFailed)}
-                  className={styles.sectionHeader}
-                >
-                  <XCircle className="h-5 w-5 text-red-500" />
-                  <h3 className={styles.sectionTitle}>미완료</h3>
-                  <Badge variant="secondary" className={styles.sectionBadge}>
-                    {tasksByStatus.failed.length}개
-                  </Badge>
-                  <ChevronDown
-                    className={`${styles.chevron} ${
-                      showFailed ? styles.rotated : ""
-                    }`}
-                  />
-                </button>
-                {showFailed && (
-                  <div className={styles.tasksList}>
-                    {getDisplayedTasks("failed").map(renderTaskItem)}
-                    {tasksByStatus.failed.length > 7 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={styles.expandButton}
-                        onClick={() => toggleExpanded("failed")}
-                      >
-                        {expandedSections.failed
-                          ? "접기"
-                          : `더보기 (${tasksByStatus.failed.length - 7}개 더)`}
-                        <ChevronDown
-                          className={`${styles.chevron} ${
-                            expandedSections.failed ? styles.rotated : ""
-                          }`}
-                        />
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className={styles.taskSection}>
+              <button
+                onClick={() => setShowFailed(!showFailed)}
+                className={styles.sectionHeader}
+              >
+                <XCircle className="h-5 w-5 text-red-500" />
+                <h3 className={styles.sectionTitle}>미완료</h3>
+                <Badge variant="secondary" className={styles.sectionBadge}>
+                  {tasksByStatus.failed.length}개
+                </Badge>
+                <ChevronDown
+                  className={`${styles.chevron} ${
+                    showFailed ? styles.rotated : ""
+                  }`}
+                />
+              </button>
+              {showFailed && (
+                <div className={styles.tasksList}>
+                  {getDisplayedTasks("failed").map(renderTaskItem)}
+                  {tasksByStatus.failed.length > 7 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={styles.expandButton}
+                      onClick={() => toggleExpanded("failed")}
+                    >
+                      {expandedSections.failed
+                        ? "접기"
+                        : `더보기 (${tasksByStatus.failed.length - 7}개 더)`}
+                      <ChevronDown
+                        className={`${styles.chevron} ${
+                          expandedSections.failed ? styles.rotated : ""
+                        }`}
+                      />
+                    </Button>
+                  )}
+                  {tasksByStatus.failed.length === 0 && (
+                    <div className={styles.emptyTasks}>
+                      표시할 항목이 없습니다
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {tasks.length === 0 && (
               <Card>
