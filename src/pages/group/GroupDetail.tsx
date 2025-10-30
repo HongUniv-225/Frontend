@@ -212,17 +212,7 @@ const convertApiTodoTypeToUiType = (todoType: string): TaskType => {
   }
 };
 
-// 날짜 기반으로 상태를 계산하는 함수 (API가 상태를 주지 않는 경우 대비)
-const deriveStatusFromDates = (
-  startDate: string,
-  dueDate: string
-): "pending" | "in-progress" | "completed" | "failed" => {
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-  if (todayStr < startDate) return "pending";
-  if (todayStr > dueDate) return "failed";
-  return "in-progress";
-};
+// (removed) 날짜 기반 상태 계산 함수는 더 이상 직접 사용하지 않습니다
 
 // 비즈니스 규칙에 따른 상태 파생 (todoStatus가 없을 때 적용)
 const deriveStatusByRules = (params: {
